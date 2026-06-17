@@ -17,7 +17,16 @@ export type TeamProfile = TeamStats & {
   team: string;
 };
 
-export type BaseComboStrategy = 'safe' | 'balanced' | 'underdog' | 'goals' | 'highScore';
+export type BaseComboStrategy =
+  | 'safe'
+  | 'balanced'
+  | 'underdog'
+  | 'goals'
+  | 'highScore'
+  | 'mainline'
+  | 'coverage'
+  | 'upset'
+  | 'mixed';
 
 export type ComboStrategy = BaseComboStrategy | 'random';
 
@@ -70,7 +79,10 @@ export type UiState = {
   comboType: number;
   strategy: ComboStrategy;
   randomSeed: number;
+  enabledMarkets: DirectionMarket[];
 };
+
+export type DirectionMarket = 'winner' | 'overUnder25' | 'btts';
 
 export type AppState = {
   version: number;

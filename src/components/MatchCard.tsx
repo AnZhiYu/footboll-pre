@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp, Copy, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import type { Match, MatchAnalysis, TeamStats } from '../types';
-import { formatProbability } from '../lib/combo';
+import { formatProbability, getScoreLayers } from '../lib/combo';
 import { getConfidenceInsight, getMatchVerdict, getPaceInsight, getXgInsight } from '../lib/insights';
 import { StatControl } from './StatControl';
 
@@ -37,6 +37,7 @@ export function MatchCard({
   const pace = getPaceInsight(analysis.paceFactor);
   const confidence = getConfidenceInsight(analysis.mostLikely.probability);
   const verdict = getMatchVerdict(analysis);
+  const scoreLayers = getScoreLayers(analysis);
 
   const copyTitle = async () => {
     await navigator.clipboard?.writeText(title);
@@ -81,17 +82,17 @@ export function MatchCard({
             <Copy size={15} />
             {copied ? <span className="copied-badge">已复制</span> : null}
           </button>
-          <span className="summary-grid">
+          <div className="score-layer-grid" aria-label={`${title} 比分分层推荐`}>
             <span>
-              最可能 <strong>{analysis.mostLikely.label}</strong>
+              主线 <strong>{scoreLayers.mainline.map((pick) => pick.label).join(' / ')}</strong>
             </span>
             <span>
-              大球 <strong>{analysis.highScore.label}</strong>
+              覆盖 <strong>{scoreLayers.coverage.map((pick) => pick.label).join(' / ')}</strong>
             </span>
             <span>
-              小球 <strong>{analysis.lowScore.label}</strong>
+              防冷 <strong>{scoreLayers.upset.map((pick) => pick.label).join(' / ')}</strong>
             </span>
-          </span>
+          </div>
           <div className="metric-strip" aria-label={`${title} 指标解读`}>
             <span className="metric-chip" title={`${homeXg.tooltip} ${homeXg.bettingHint}`}>
               xG {analysis.homeLambda.toFixed(2)} <strong data-tone={homeXg.tone}>{homeXg.label}</strong>

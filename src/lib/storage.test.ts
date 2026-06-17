@@ -9,7 +9,7 @@ describe('state storage', () => {
       version: CURRENT_STATE_VERSION,
       teamPool: [],
       matchPool: [],
-      uiState: { selectedMatchIds: [], comboType: 2, strategy: 'balanced', randomSeed: 0 },
+      uiState: { selectedMatchIds: [], comboType: 2, strategy: 'coverage', randomSeed: 0, enabledMarkets: [] },
     });
   });
 
@@ -19,7 +19,7 @@ describe('state storage', () => {
     expect(loadState().matchPool).toEqual([]);
   });
 
-  it('migrates version 1 persisted data to version 2 with a random seed', () => {
+  it('migrates version 1 persisted data to the current schema with defaults', () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
@@ -39,7 +39,7 @@ describe('state storage', () => {
     );
 
     expect(loadState()).toMatchObject({
-      version: 2,
+      version: CURRENT_STATE_VERSION,
       teamPool: [],
       matchPool: [
         {
@@ -48,7 +48,7 @@ describe('state storage', () => {
           awayStats: { attack: 75, defense: 65, stability: 70, pace: 50 },
         },
       ],
-      uiState: { selectedMatchIds: ['m_1'], comboType: 2, strategy: 'balanced', randomSeed: 0 },
+      uiState: { selectedMatchIds: ['m_1'], comboType: 2, strategy: 'balanced', randomSeed: 0, enabledMarkets: [] },
     });
   });
 
@@ -65,7 +65,13 @@ describe('state storage', () => {
           awayStats: { attack: 75, defense: 65, stability: 70, pace: 48 },
         },
       ],
-      uiState: { selectedMatchIds: ['m_1'], comboType: 2, strategy: 'safe' as const, randomSeed: 5 },
+      uiState: {
+        selectedMatchIds: ['m_1'],
+        comboType: 2,
+        strategy: 'safe' as const,
+        randomSeed: 5,
+        enabledMarkets: ['winner' as const, 'btts' as const],
+      },
     };
 
     saveState(state);

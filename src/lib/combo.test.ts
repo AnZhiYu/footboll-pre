@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { MatchAnalysis } from '../types';
-import { buildComboGroups, combinations, getStrategyCandidates } from './combo';
+import { buildComboGroups, combinations, getScoreLayers, getStrategyCandidates } from './combo';
 
 const analysis = (id: string, probabilities: number[]): MatchAnalysis => ({
   matchId: id,
@@ -58,29 +58,66 @@ describe('combo generator', () => {
 
   it('selects strategy candidate pools deterministically', () => {
     expect(getStrategyCandidates(analyses[0], 'safe').map((pick) => pick.rank)).toEqual([1]);
+    expect(getStrategyCandidates(analyses[0], 'mainline').map((pick) => pick.rank)).toEqual([1, 2]);
     expect(getStrategyCandidates(analyses[0], 'balanced').map((pick) => pick.rank)).toEqual([1, 2, 3]);
+    expect(getStrategyCandidates(analyses[0], 'coverage').map((pick) => pick.label)).toEqual([
+      '1-1',
+      '1-0',
+      '0-1',
+      '2-1',
+      '1-2',
+    ]);
     expect(getStrategyCandidates(analyses[0], 'goals').map((pick) => pick.label)).toEqual([
       '1-1',
       '1-0',
       '0-1',
+      '2-1',
+      '1-2',
+      '2-2',
+      '3-1',
+      '4-0',
+      '3-2',
+      '4-1',
+    ]);
+    expect(getStrategyCandidates(analyses[0], 'upset').map((pick) => pick.label)).toEqual([
+      '2-1',
+      '1-2',
       '2-2',
       '3-1',
       '4-0',
     ]);
-    expect(getStrategyCandidates(analyses[0], 'highScore').every((pick) => pick.homeGoals + pick.awayGoals >= 4)).toBe(
+    expect(getStrategyCandidates(analyses[0], 'highScore').every((pick) => pick.homeGoals + pick.awayGoals >= 3)).toBe(
       true,
     );
-    expect(getStrategyCandidates(analyses[0], 'highScore')).toHaveLength(6);
+    expect(getStrategyCandidates(analyses[0], 'highScore').map((pick) => pick.label)).toEqual([
+      '2-1',
+      '1-2',
+      '2-2',
+      '3-1',
+      '4-0',
+      '3-2',
+      '4-1',
+      '5-0',
+    ]);
 
     const underdog = getStrategyCandidates(analyses[0], 'underdog');
     expect(underdog.map((pick) => pick.label)).toContain('2-1');
     expect(underdog.map((pick) => pick.label)).toContain('3-1');
     expect(new Set(underdog.map((pick) => pick.label)).size).toBe(underdog.length);
-    expect(underdog.length).toBeLessThanOrEqual(6);
+    expect(underdog.length).toBeLessThanOrEqual(8);
+  });
+
+  it('builds score layers for each match', () => {
+    const layers = getScoreLayers(analyses[0]);
+
+    expect(layers.mainline.map((pick) => pick.label)).toEqual(['1-1', '1-0']);
+    expect(layers.coverage.map((pick) => pick.label)).toEqual(['1-1', '1-0', '0-1', '2-1', '1-2']);
+    expect(layers.upset.map((pick) => pick.label)).toEqual(['2-1', '1-2', '2-2', '3-1', '4-0']);
+    expect(layers.mixed.map((pick) => pick.label)).toEqual(['1-1', '1-0', '0-1', '2-1', '1-2', '2-2']);
   });
 
   it('builds 5x1 groups and keeps top plans sorted inside each group', () => {
-    const groups = buildComboGroups(analyses, 5, 'balanced');
+    const groups = buildComboGroups(analyses, 5, 'coverage');
 
     expect(groups).toHaveLength(1);
     expect(groups[0].matches).toHaveLength(5);
@@ -120,10 +157,28 @@ describe('combo generator', () => {
     expect(strategies.size).toBeGreaterThan(1);
   });
 
-  it('can randomly assign the high score strategy', () => {
+  it('randomly assigns only layered strategy variants', () => {
     const groups = buildComboGroups(analyses.slice(0, 5), 5, 'random', 9);
     const strategies = new Set(groups[0].plans[0].picks.map((pick) => pick.strategyUsed));
 
-    expect(strategies.has('highScore')).toBe(true);
+    expect([...strategies].every((strategy) => ['mainline', 'coverage', 'upset', 'mixed'].includes(strategy))).toBe(
+      true,
+    );
+    expect(strategies.size).toBeGreaterThan(1);
+  });
+
+  it('builds 20x1 coverage plans without expanding the full score cartesian product', () => {
+    const manyAnalyses = Array.from({ length: 20 }, (_, index) =>
+      analysis(`${index + 1}`, [0.2, 0.16, 0.14, 0.1, 0.08, 0.07, 0.05, 0.04]),
+    );
+
+    const startedAt = performance.now();
+    const groups = buildComboGroups(manyAnalyses, 20, 'coverage');
+    const duration = performance.now() - startedAt;
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].plans).toHaveLength(5);
+    expect(groups[0].plans[0].picks).toHaveLength(20);
+    expect(duration).toBeLessThan(100);
   });
 });

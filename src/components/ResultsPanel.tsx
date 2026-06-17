@@ -1,15 +1,33 @@
 import { Check, Copy } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { formatProbability, STRATEGY_LABELS } from '../lib/combo';
-import type { ComboGroup } from '../types';
+import { formatEnabledMarkets } from '../lib/markets';
+import type { ComboGroup, ComboPlanPick, DirectionMarket } from '../types';
 
 type ResultsPanelProps = {
   groups: ComboGroup[];
   selectedCount: number;
   comboType: number;
+  enabledMarkets: DirectionMarket[];
 };
 
-const formatCopyText = (groups: ComboGroup[]) =>
+const formatPickMarkets = (pick: ComboPlanPick, enabledMarkets: DirectionMarket[]) =>
+  formatEnabledMarkets(pick.score, pick.homeName, pick.awayName, enabledMarkets);
+
+const formatPickText = (pick: ComboPlanPick, enabledMarkets: DirectionMarket[]) => {
+  const markets = formatPickMarkets(pick, enabledMarkets);
+  const details = [STRATEGY_LABELS[pick.strategyUsed], ...markets].join('｜');
+  return `${pick.homeName}-${pick.awayName} ${pick.score.label}(${details})`;
+};
+
+const renderMarketTags = (pick: ComboPlanPick, enabledMarkets: DirectionMarket[]) =>
+  formatPickMarkets(pick, enabledMarkets).map((market) => (
+    <span className="market-tag" key={market}>
+      {market}
+    </span>
+  ));
+
+const formatCopyText = (groups: ComboGroup[], enabledMarkets: DirectionMarket[]) =>
   groups
     .map((group, groupIndex) => {
       const title = `大组合 ${groupIndex + 1}: ${group.matches
@@ -19,10 +37,7 @@ const formatCopyText = (groups: ComboGroup[]) =>
         .map(
           (plan, planIndex) =>
             `  方案${planIndex + 1} ${formatProbability(plan.jointProbability)}: ${plan.picks
-              .map(
-                (pick) =>
-                  `${pick.homeName}-${pick.awayName} ${pick.score.label}(${STRATEGY_LABELS[pick.strategyUsed]})`,
-              )
+              .map((pick) => formatPickText(pick, enabledMarkets))
               .join('，')}`,
         )
         .join('\n');
@@ -30,12 +45,12 @@ const formatCopyText = (groups: ComboGroup[]) =>
     })
     .join('\n\n');
 
-export function ResultsPanel({ groups, selectedCount, comboType }: ResultsPanelProps) {
+export function ResultsPanel({ groups, selectedCount, comboType, enabledMarkets }: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const visibleGroups = expanded ? groups : groups.slice(0, 3);
   const hiddenCount = Math.max(0, groups.length - 3);
-  const copyText = useMemo(() => formatCopyText(groups), [groups]);
+  const copyText = useMemo(() => formatCopyText(groups, enabledMarkets), [enabledMarkets, groups]);
 
   const handleCopy = async () => {
     if (!copyText) {
@@ -95,17 +110,23 @@ export function ResultsPanel({ groups, selectedCount, comboType }: ResultsPanelP
             <div className="plan-list">
               {group.plans.map((plan, planIndex) => (
                 <div className="plan-row" key={plan.id}>
-                  <span className="plan-rank">#{planIndex + 1}</span>
-                  <div>
+                  <div className="plan-row-heading">
+                    <span className="plan-rank">方案 {planIndex + 1}</span>
                     <strong>{formatProbability(plan.jointProbability)}</strong>
-                    <p>
-                      {plan.picks
-                        .map(
-                          (pick) =>
-                            `${pick.homeName} ${pick.score.label} ${pick.awayName} · 策略:${STRATEGY_LABELS[pick.strategyUsed]}`,
-                        )
-                        .join(' / ')}
-                    </p>
+                  </div>
+                  <div className="pick-list" aria-label={`方案 ${planIndex + 1} 场次明细`}>
+                    {plan.picks.map((pick) => (
+                      <div className="pick-row" key={`${plan.id}:${pick.matchId}`}>
+                        <div className="pick-match">
+                          <span>{pick.homeName} vs {pick.awayName}</span>
+                        </div>
+                        <strong className="pick-score">{pick.score.label}</strong>
+                        <div className="pick-tags">
+                          <span className="strategy-tag">策略:{STRATEGY_LABELS[pick.strategyUsed]}</span>
+                          {renderMarketTags(pick, enabledMarkets)}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}

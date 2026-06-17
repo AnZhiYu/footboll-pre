@@ -10,7 +10,7 @@ import { buildComboGroups } from './lib/combo';
 import { analyzeMatch } from './lib/poisson';
 import { createEmptyState, loadState, saveState } from './lib/storage';
 import { upsertMatchPairs, upsertTeamProfiles } from './lib/teamImport';
-import type { AppState, ComboStrategy, Match, TeamProfile } from './types';
+import type { AppState, ComboStrategy, DirectionMarket, Match, TeamProfile } from './types';
 import './styles.css';
 
 function App() {
@@ -131,6 +131,19 @@ function App() {
     }));
   };
 
+  const toggleMarket = (market: DirectionMarket) => {
+    setState((current) => {
+      const enabledMarkets = current.uiState.enabledMarkets.includes(market)
+        ? current.uiState.enabledMarkets.filter((item) => item !== market)
+        : [...current.uiState.enabledMarkets, market];
+
+      return {
+        ...current,
+        uiState: { ...current.uiState, enabledMarkets },
+      };
+    });
+  };
+
   const resetAll = () => {
     setState(createEmptyState());
   };
@@ -213,14 +226,17 @@ function App() {
             selectedCount={selectedAnalyses.length}
             comboType={effectiveComboType}
             strategy={state.uiState.strategy}
+            enabledMarkets={state.uiState.enabledMarkets}
             onComboTypeChange={setComboType}
             onStrategyChange={setStrategy}
             onRefreshRandom={refreshRandom}
+            onToggleMarket={toggleMarket}
           />
           <ResultsPanel
             groups={comboGroups}
             selectedCount={selectedAnalyses.length}
             comboType={effectiveComboType}
+            enabledMarkets={state.uiState.enabledMarkets}
           />
         </aside>
       </div>

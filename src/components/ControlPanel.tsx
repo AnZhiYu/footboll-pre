@@ -1,5 +1,6 @@
 import { Dice5, Flame, Goal, RefreshCcw, Shuffle, Sparkles } from 'lucide-react';
-import type { ComboStrategy } from '../types';
+import { MARKET_LABELS } from '../lib/markets';
+import type { ComboStrategy, DirectionMarket } from '../types';
 
 type ControlPanelProps = {
   selectedCount: number;
@@ -8,15 +9,19 @@ type ControlPanelProps = {
   onComboTypeChange: (comboType: number) => void;
   onStrategyChange: (strategy: ComboStrategy) => void;
   onRefreshRandom: () => void;
+  enabledMarkets: DirectionMarket[];
+  onToggleMarket: (market: DirectionMarket) => void;
 };
 
 const strategyOptions: Array<{ value: ComboStrategy; label: string; icon: typeof Shuffle }> = [
-  { value: 'balanced', label: '平衡', icon: Shuffle },
-  { value: 'underdog', label: '博冷', icon: Sparkles },
-  { value: 'goals', label: '大小球倾向', icon: Goal },
-  { value: 'highScore', label: '大比分激进', icon: Flame },
+  { value: 'mainline', label: '主线串', icon: Goal },
+  { value: 'coverage', label: '覆盖串', icon: Shuffle },
+  { value: 'upset', label: '防冷串', icon: Sparkles },
+  { value: 'mixed', label: '混合串', icon: Flame },
   { value: 'random', label: '策略随机', icon: Dice5 },
 ];
+
+const marketOptions: DirectionMarket[] = ['winner', 'overUnder25', 'btts'];
 
 export function ControlPanel({
   selectedCount,
@@ -25,6 +30,8 @@ export function ControlPanel({
   onComboTypeChange,
   onStrategyChange,
   onRefreshRandom,
+  enabledMarkets,
+  onToggleMarket,
 }: ControlPanelProps) {
   const comboOptions = Array.from({ length: Math.max(0, selectedCount - 1) }, (_, index) => index + 2);
 
@@ -79,6 +86,22 @@ export function ControlPanel({
             刷新随机
           </button>
         ) : null}
+      </div>
+
+      <div className="control-group">
+        <span className="control-label">附加方向项</span>
+        <div className="market-options">
+          {marketOptions.map((market) => (
+            <label className="market-option" key={market}>
+              <input
+                type="checkbox"
+                checked={enabledMarkets.includes(market)}
+                onChange={() => onToggleMarket(market)}
+              />
+              {MARKET_LABELS[market]}
+            </label>
+          ))}
+        </div>
       </div>
     </section>
   );

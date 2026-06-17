@@ -60,7 +60,7 @@ describe('App', () => {
     expect(screen.getByText(/Top 5 比分方案/)).toBeInTheDocument();
   });
 
-  it('shows goals and random strategy controls and can refresh random picks', async () => {
+  it('shows layered combo strategy controls and can refresh random picks', async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -70,10 +70,12 @@ describe('App', () => {
     await user.click(screen.getByLabelText('选择 巴西 vs 墨西哥'));
 
     expect(screen.queryByRole('button', { name: '最稳' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '大小球倾向' }));
-    expect(screen.getByRole('button', { name: '大小球倾向' })).toHaveAttribute('aria-pressed', 'true');
+    await user.click(screen.getByRole('button', { name: '覆盖串' }));
+    expect(screen.getByRole('button', { name: '覆盖串' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText(/大组合 1/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '大比分激进' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '主线串' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '防冷串' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '混合串' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '策略随机' }));
     expect(screen.getByRole('button', { name: '刷新随机' })).toBeInTheDocument();
@@ -84,6 +86,82 @@ describe('App', () => {
     const after = screen.getAllByText(/策略:/).map((node) => node.textContent).join('|');
 
     expect(after).not.toEqual(before);
+  });
+
+  it('adds selected direction markets to results and copy text without changing probabilities', async () => {
+    const user = userEvent.setup();
+    const writeTextSpy = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: writeTextSpy,
+      },
+    });
+    render(<App />);
+
+    await addMatch(user, '英格兰', '美国');
+    await user.click(screen.getByLabelText('选择 英格兰 vs 美国'));
+    await addMatch(user, '巴西', '墨西哥');
+    await user.click(screen.getByLabelText('选择 巴西 vs 墨西哥'));
+
+    const probabilityBefore = screen.getAllByText(/\d+\.\d{2}%/)[0].textContent;
+    expect(screen.queryByText(/胜平负:/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('胜平负方向'));
+    await user.click(screen.getByLabelText('2.5 大小球'));
+    await user.click(screen.getByLabelText('BTTS 双方进球'));
+
+    expect(screen.getAllByText(/胜平负:/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/2.5:/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/BTTS:/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/\d+\.\d{2}%/)[0]).toHaveTextContent(probabilityBefore ?? '');
+
+    await user.click(screen.getByRole('button', { name: '复制文本' }));
+
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('胜平负:'));
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('2.5:'));
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('BTTS:'));
+  });
+
+  it('separates every match pick into readable rows inside each plan', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await addMatch(user, '英格兰', '美国');
+    await user.click(screen.getByLabelText('选择 英格兰 vs 美国'));
+    await addMatch(user, '巴西', '墨西哥');
+    await user.click(screen.getByLabelText('选择 巴西 vs 墨西哥'));
+    await user.click(screen.getByLabelText('胜平负方向'));
+
+    expect(screen.getAllByLabelText(/方案 \d+ 场次明细/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('英格兰 vs 美国').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('巴西 vs 墨西哥').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/策略:/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/胜平负:/).length).toBeGreaterThan(0);
+  });
+
+  it('orders strategy buttons by recent backtest hit rate', async () => {
+    render(<App />);
+
+    const strategyButtons = ['主线串', '覆盖串', '防冷串', '混合串', '策略随机'].map((name) =>
+      screen.getByRole('button', { name }),
+    );
+
+    strategyButtons.slice(0, -1).forEach((button, index) => {
+      expect(Boolean(button.compareDocumentPosition(strategyButtons[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING))
+        .toBe(true);
+    });
+  });
+
+  it('shows score layers on collapsed match cards', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await addMatch(user, '英格兰', '美国');
+
+    expect(screen.getByText('主线')).toBeInTheDocument();
+    expect(screen.getByText('覆盖')).toBeInTheDocument();
+    expect(screen.getByText('防冷')).toBeInTheDocument();
   });
 
   it('removes deleted matches from selection', async () => {
