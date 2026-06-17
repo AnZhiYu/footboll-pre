@@ -24,10 +24,33 @@ const isStats = (value: unknown): value is TeamStats => {
   }
 
   const stats = value as Record<string, unknown>;
-  return ['attack', 'defense', 'stability'].every(
+  const hasCoreStats = ['attack', 'defense', 'stability'].every(
     (key) => typeof stats[key] === 'number' && Number.isFinite(stats[key]),
   );
+  const hasValidPace =
+    stats.pace === undefined ||
+    (typeof stats.pace === 'number' && Number.isFinite(stats.pace) && stats.pace >= 0 && stats.pace <= 100);
+
+  return hasCoreStats && hasValidPace;
 };
+
+const normalizeStats = (stats: TeamStats): TeamStats => ({
+  attack: stats.attack,
+  defense: stats.defense,
+  stability: stats.stability,
+  pace: typeof stats.pace === 'number' && Number.isFinite(stats.pace) ? stats.pace : 50,
+});
+
+const normalizeMatch = (match: Match): Match => ({
+  ...match,
+  homeStats: normalizeStats(match.homeStats),
+  awayStats: normalizeStats(match.awayStats),
+});
+
+const normalizeTeamProfile = (profile: TeamProfile): TeamProfile => ({
+  ...profile,
+  pace: typeof profile.pace === 'number' && Number.isFinite(profile.pace) ? profile.pace : 50,
+});
 
 const isMatch = (value: unknown): value is Match => {
   if (!value || typeof value !== 'object') {
@@ -58,6 +81,7 @@ const isStrategy = (value: unknown): value is ComboStrategy =>
   value === 'balanced' ||
   value === 'underdog' ||
   value === 'goals' ||
+  value === 'highScore' ||
   value === 'random';
 
 const sanitizeUiState = (value: unknown, validMatchIds: Set<string>): UiState => {
@@ -123,8 +147,8 @@ export const loadState = (): AppState => {
     return {
       version: CURRENT_STATE_VERSION,
       lastUpdated: parsed.lastUpdated,
-      teamPool: Array.isArray(parsed.teamPool) ? parsed.teamPool : [],
-      matchPool: parsed.matchPool,
+      teamPool: Array.isArray(parsed.teamPool) ? parsed.teamPool.map(normalizeTeamProfile) : [],
+      matchPool: parsed.matchPool.map(normalizeMatch),
       uiState: sanitizeUiState(parsed.uiState, validMatchIds),
     };
   } catch {
@@ -141,6 +165,8 @@ export const saveState = (state: AppState) => {
     ...state,
     version: CURRENT_STATE_VERSION,
     lastUpdated: new Date().toISOString(),
+    teamPool: state.teamPool.map(normalizeTeamProfile),
+    matchPool: state.matchPool.map(normalizeMatch),
   };
 
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));

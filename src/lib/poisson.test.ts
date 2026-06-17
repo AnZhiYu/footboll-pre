@@ -24,11 +24,39 @@ describe('poisson engine', () => {
     expect(getPaceFactor(70.1)).toBe(1.2);
   });
 
+  it('uses team pace ratings first and treats missing pace as the neutral average', () => {
+    expect(
+      calculateExpectedGoals(
+        makeMatch({
+          homeStats: { attack: 70, defense: 70, stability: 70, pace: 75 },
+          awayStats: { attack: 70, defense: 70, stability: 70, pace: 38 },
+        }),
+      ),
+    ).toMatchObject({
+      paceRaw: 56.5,
+      paceFactor: 1,
+    });
+
+    expect(
+      calculateExpectedGoals(
+        makeMatch({
+          homeStats: { attack: 70, defense: 70, stability: 70, pace: 72 },
+          awayStats: { attack: 70, defense: 70, stability: 70 },
+        }),
+      ),
+    ).toMatchObject({
+      paceRaw: 61,
+      paceFactor: 1.1,
+    });
+  });
+
   it('keeps home and away expected goals symmetric for equal teams', () => {
     const goals = calculateExpectedGoals(makeMatch());
 
+    expect(goals.paceRaw).toBe(50);
+    expect(goals.paceFactor).toBe(1);
     expect(goals.homeLambda).toBeCloseTo(goals.awayLambda, 8);
-    expect(goals.homeLambda).toBeCloseTo(0.96, 2);
+    expect(goals.homeLambda).toBeCloseTo(1.2, 2);
   });
 
   it('clamps expected goals to the safe range', () => {

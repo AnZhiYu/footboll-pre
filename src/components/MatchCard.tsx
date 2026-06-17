@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Copy, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import type { Match, MatchAnalysis, TeamStats } from '../types';
 import { formatProbability } from '../lib/combo';
+import { getConfidenceInsight, getMatchVerdict, getPaceInsight, getXgInsight } from '../lib/insights';
 import { StatControl } from './StatControl';
 
 type MatchCardProps = {
@@ -17,6 +18,7 @@ const statLabels: Array<[keyof TeamStats, string]> = [
   ['attack', '进攻'],
   ['defense', '防守'],
   ['stability', '稳定'],
+  ['pace', '节奏'],
 ];
 
 export function MatchCard({
@@ -30,6 +32,11 @@ export function MatchCard({
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const title = `${match.homeName} vs ${match.awayName}`;
+  const homeXg = getXgInsight(analysis.homeLambda);
+  const awayXg = getXgInsight(analysis.awayLambda);
+  const pace = getPaceInsight(analysis.paceFactor);
+  const confidence = getConfidenceInsight(analysis.mostLikely.probability);
+  const verdict = getMatchVerdict(analysis);
 
   const copyTitle = async () => {
     await navigator.clipboard?.writeText(title);
@@ -85,6 +92,23 @@ export function MatchCard({
               小球 <strong>{analysis.lowScore.label}</strong>
             </span>
           </span>
+          <div className="metric-strip" aria-label={`${title} 指标解读`}>
+            <span className="metric-chip" title={`${homeXg.tooltip} ${homeXg.bettingHint}`}>
+              xG {analysis.homeLambda.toFixed(2)} <strong data-tone={homeXg.tone}>{homeXg.label}</strong>
+            </span>
+            <span className="metric-divider">:</span>
+            <span className="metric-chip" title={`${awayXg.tooltip} ${awayXg.bettingHint}`}>
+              {analysis.awayLambda.toFixed(2)} <strong data-tone={awayXg.tone}>{awayXg.label}</strong>
+            </span>
+            <span className="metric-chip" title={`${pace.tooltip} ${pace.bettingHint}`}>
+              节奏 {analysis.paceFactor.toFixed(1)} <strong data-tone={pace.tone}>{pace.label}</strong>
+            </span>
+            <span className="metric-chip" title={`${confidence.tooltip} ${confidence.bettingHint}`}>
+              Top1 {formatProbability(analysis.mostLikely.probability)}{' '}
+              <strong data-tone={confidence.tone}>{confidence.label}</strong>
+            </span>
+          </div>
+          <p className="match-verdict">{verdict}</p>
         </div>
         <button
           className="icon-button danger"
@@ -125,7 +149,7 @@ export function MatchCard({
                   key={`home-${field}`}
                   label={`球队A${label}`}
                   field={field}
-                  value={match.homeStats[field]}
+                  value={match.homeStats[field] ?? 50}
                   onChange={(nextField, value) => updateStats('homeStats', nextField, value)}
                 />
               ))}
@@ -137,18 +161,13 @@ export function MatchCard({
                   key={`away-${field}`}
                   label={`球队B${label}`}
                   field={field}
-                  value={match.awayStats[field]}
+                  value={match.awayStats[field] ?? 50}
                   onChange={(nextField, value) => updateStats('awayStats', nextField, value)}
                 />
               ))}
             </section>
           </div>
 
-          <div className="analysis-strip">
-            <span>xG {analysis.homeLambda.toFixed(2)} : {analysis.awayLambda.toFixed(2)}</span>
-            <span>节奏 {analysis.paceFactor.toFixed(1)}</span>
-            <span>Top1 {formatProbability(analysis.mostLikely.probability)}</span>
-          </div>
         </div>
       ) : null}
     </article>

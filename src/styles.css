@@ -205,6 +205,31 @@ input:focus {
   gap: 10px;
 }
 
+.match-pool-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+.match-pool-heading p {
+  color: #66746b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.match-pool-heading strong {
+  color: #22382b;
+  font-size: 13px;
+}
+
+.insight-help-button {
+  min-height: 34px;
+  width: 34px;
+  flex-basis: 34px;
+}
+
 .match-card {
   padding: 12px;
 }
@@ -273,10 +298,70 @@ input:focus {
 }
 
 .summary-grid span,
-.analysis-strip span {
+.metric-chip {
   border-radius: 6px;
   background: #f0f5f1;
   padding: 5px 7px;
+}
+
+.metric-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 2px;
+  color: #405044;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.metric-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.metric-chip strong {
+  border-radius: 5px;
+  padding: 2px 5px;
+  font-size: 11px;
+}
+
+.metric-chip strong[data-tone="muted"] {
+  color: #395064;
+  background: #dce8ef;
+}
+
+.metric-chip strong[data-tone="low"] {
+  color: #4d5f70;
+  background: #e7eef5;
+}
+
+.metric-chip strong[data-tone="normal"] {
+  color: #246b49;
+  background: #dff2e5;
+}
+
+.metric-chip strong[data-tone="high"] {
+  color: #8b4a12;
+  background: #faead7;
+}
+
+.metric-chip strong[data-tone="extreme"] {
+  color: #8d2424;
+  background: #f7dddd;
+}
+
+.metric-divider {
+  color: #8a978e;
+  font-weight: 900;
+}
+
+.match-verdict {
+  color: #59665d;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .match-editor {
@@ -319,15 +404,6 @@ input:focus {
 .stat-number {
   min-height: 34px;
   padding: 0 6px;
-}
-
-.analysis-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  color: #405044;
-  font-size: 12px;
-  font-weight: 800;
 }
 
 .control-panel {
@@ -504,6 +580,104 @@ input:focus {
   display: none;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(15 25 18 / 46%);
+}
+
+.insight-modal {
+  width: min(920px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: auto;
+  border: 1px solid #d8dfd8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 22px 70px rgb(12 20 15 / 24%);
+  padding: 18px;
+}
+
+.insight-modal-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.insight-modal-heading p {
+  color: #66746b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.insight-modal-heading h2 {
+  margin-top: 4px;
+  color: #172b1f;
+  font-size: 20px;
+}
+
+.insight-guide-section {
+  display: grid;
+  gap: 9px;
+  margin-top: 16px;
+}
+
+.insight-guide-section h3 {
+  color: #26392e;
+  font-size: 15px;
+}
+
+.insight-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.insight-guide-item {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #e3e9e4;
+  border-radius: 6px;
+  background: #fbfdfb;
+  padding: 10px;
+}
+
+.insight-guide-item div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.insight-guide-item span {
+  color: #7a867d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.insight-guide-item strong {
+  color: #193722;
+  font-size: 13px;
+}
+
+.insight-guide-item p {
+  color: #4d5b51;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.insight-guide-item small {
+  color: #7c5b37;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 @media (max-width: 960px) {
   .app-shell {
     padding: 18px 14px 84px;
@@ -541,7 +715,8 @@ input:focus {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .summary-grid span {
+  .summary-grid span,
+  .metric-chip {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -573,6 +748,10 @@ input:focus {
     box-shadow: 0 16px 38px rgb(24 36 28 / 22%);
     font-weight: 900;
   }
+
+  .insight-guide-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 460px) {
@@ -592,5 +771,24 @@ input:focus {
 
   .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .metric-strip {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .metric-divider {
+    display: none;
+  }
+
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .insight-modal {
+    max-height: calc(100vh - 20px);
+    padding: 14px;
   }
 }

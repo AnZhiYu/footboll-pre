@@ -2,6 +2,7 @@ export type TeamStats = {
   attack: number;
   defense: number;
   stability: number;
+  pace?: number;
 };
 
 export type Match = {

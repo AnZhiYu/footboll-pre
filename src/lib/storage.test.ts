@@ -41,7 +41,13 @@ describe('state storage', () => {
     expect(loadState()).toMatchObject({
       version: 2,
       teamPool: [],
-      matchPool: [{ id: 'm_1' }],
+      matchPool: [
+        {
+          id: 'm_1',
+          homeStats: { attack: 85, defense: 70, stability: 80, pace: 50 },
+          awayStats: { attack: 75, defense: 65, stability: 70, pace: 50 },
+        },
+      ],
       uiState: { selectedMatchIds: ['m_1'], comboType: 2, strategy: 'balanced', randomSeed: 0 },
     });
   });
@@ -49,14 +55,14 @@ describe('state storage', () => {
   it('round-trips compatible state', () => {
     const state = {
       ...createEmptyState(),
-      teamPool: [{ team: '奥地利', attack: 76, defense: 74, stability: 78 }],
+      teamPool: [{ team: '奥地利', attack: 76, defense: 74, stability: 78, pace: 62 }],
       matchPool: [
         {
           id: 'm_1',
           homeName: '英格兰',
           awayName: '美国',
-          homeStats: { attack: 85, defense: 70, stability: 80 },
-          awayStats: { attack: 75, defense: 65, stability: 70 },
+          homeStats: { attack: 85, defense: 70, stability: 80, pace: 70 },
+          awayStats: { attack: 75, defense: 65, stability: 70, pace: 48 },
         },
       ],
       uiState: { selectedMatchIds: ['m_1'], comboType: 2, strategy: 'safe' as const, randomSeed: 5 },

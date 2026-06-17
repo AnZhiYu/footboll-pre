@@ -5,6 +5,7 @@ import { MatchCard } from './components/MatchCard';
 import { ControlPanel } from './components/ControlPanel';
 import { ResultsPanel } from './components/ResultsPanel';
 import { TeamImportPanel } from './components/TeamImportPanel';
+import { InsightGuideModal } from './components/InsightGuideModal';
 import { buildComboGroups } from './lib/combo';
 import { analyzeMatch } from './lib/poisson';
 import { createEmptyState, loadState, saveState } from './lib/storage';
@@ -15,6 +16,7 @@ import './styles.css';
 function App() {
   const [state, setState] = useState<AppState>(() => loadState());
   const [selectedTeam, setSelectedTeam] = useState<TeamProfile | null>(null);
+  const [insightGuideOpen, setInsightGuideOpen] = useState(false);
 
   const analyses = useMemo(
     () => state.matchPool.map((match) => analyzeMatch(match)),
@@ -167,6 +169,17 @@ function App() {
           />
 
           <section className="match-pool">
+            <div className="match-pool-heading">
+              <div>
+                <p>比赛池列表</p>
+                <strong>指标常显，展开后编辑能力</strong>
+              </div>
+              <InsightGuideModal
+                open={insightGuideOpen}
+                onOpen={() => setInsightGuideOpen(true)}
+                onClose={() => setInsightGuideOpen(false)}
+              />
+            </div>
             {state.matchPool.length === 0 ? (
               <div className="panel empty-state">
                 <h2>比赛池为空</h2>

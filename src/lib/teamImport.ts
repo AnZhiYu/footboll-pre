@@ -18,7 +18,7 @@ const isProfile = (value: unknown): value is TeamProfile => {
   }
 
   const profile = value as Record<string, unknown>;
-  return (
+  const hasValidCoreStats =
     typeof profile.team === 'string' &&
     profile.team.trim().length > 0 &&
     ['attack', 'defense', 'stability'].every(
@@ -27,16 +27,32 @@ const isProfile = (value: unknown): value is TeamProfile => {
         Number.isFinite(profile[key]) &&
         profile[key] >= 0 &&
         profile[key] <= 100,
-    )
-  );
+    );
+  const hasValidPace =
+    profile.pace === undefined ||
+    (typeof profile.pace === 'number' &&
+      Number.isFinite(profile.pace) &&
+      profile.pace >= 0 &&
+      profile.pace <= 100);
+
+  return hasValidCoreStats && hasValidPace;
 };
 
-const toProfile = (profile: TeamProfile): TeamProfile => ({
-  team: profile.team.trim(),
-  attack: profile.attack,
-  defense: profile.defense,
-  stability: profile.stability,
-});
+const toProfile = (profile: TeamProfile): TeamProfile => {
+  const normalized: TeamProfile = {
+    team: profile.team.trim(),
+    attack: profile.attack,
+    defense: profile.defense,
+    stability: profile.stability,
+    pace: 50,
+  };
+
+  if (typeof profile.pace === 'number' && Number.isFinite(profile.pace)) {
+    normalized.pace = profile.pace;
+  }
+
+  return normalized;
+};
 
 export const parseTeamProfiles = (rawValue: string): ParseTeamProfilesResult => {
   try {
@@ -46,7 +62,7 @@ export const parseTeamProfiles = (rawValue: string): ParseTeamProfilesResult => 
     }
 
     if (!parsed.every(isProfile)) {
-      return { ok: false, error: '每支球队都需要 team、attack、defense、stability，数值范围为 0-100' };
+      return { ok: false, error: '每支球队都需要 team、attack、defense、stability，可选 pace，数值范围为 0-100' };
     }
 
     return {
@@ -70,7 +86,7 @@ export const parseMatchPairs = (rawValue: string): ParseMatchPairsResult => {
     }
 
     if (!parsed.every((pair) => pair.every(isProfile))) {
-      return { ok: false, error: '每支球队都需要 team、attack、defense、stability，数值范围为 0-100' };
+      return { ok: false, error: '每支球队都需要 team、attack、defense、stability，可选 pace，数值范围为 0-100' };
     }
 
     return {
@@ -108,11 +124,13 @@ export const upsertMatchPairs = (existing: Match[], imported: MatchPair[]) => {
         attack: home.attack,
         defense: home.defense,
         stability: home.stability,
+        pace: home.pace,
       },
       awayStats: {
         attack: away.attack,
         defense: away.defense,
         stability: away.stability,
+        pace: away.pace,
       },
     };
   });

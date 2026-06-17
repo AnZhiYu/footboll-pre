@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import type { Match, TeamProfile, TeamStats } from '../types';
 
-const defaultStats = { attack: 70, defense: 70, stability: 70 };
+const defaultStats = { attack: 70, defense: 70, stability: 70, pace: 50 };
 
 type MatchFormProps = {
   onAddMatch: (match: Match) => void;
@@ -28,6 +28,7 @@ export function MatchForm({ onAddMatch, selectedTeam }: MatchFormProps) {
       attack: selectedTeam.attack,
       defense: selectedTeam.defense,
       stability: selectedTeam.stability,
+      pace: selectedTeam.pace ?? 50,
     };
     if (nextSide === 'home') {
       setHomeName(selectedTeam.team);

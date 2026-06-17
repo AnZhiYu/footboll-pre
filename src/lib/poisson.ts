@@ -5,6 +5,8 @@ export const MAX_GOALS = 10;
 export const FACTORIALS = [1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800] as const;
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+const getPaceRating = (value: number | undefined) =>
+  typeof value === 'number' && Number.isFinite(value) ? clamp(value, 0, 100) : 50;
 
 export const getPaceFactor = (paceRaw: number) => {
   if (paceRaw < 40) return 0.8;
@@ -15,9 +17,7 @@ export const getPaceFactor = (paceRaw: number) => {
 };
 
 export const calculateExpectedGoals = (match: Match) => {
-  const paceRaw =
-    (match.homeStats.attack + match.awayStats.attack) / 2 -
-    (match.homeStats.defense + match.awayStats.defense) / 4;
+  const paceRaw = (getPaceRating(match.homeStats.pace) + getPaceRating(match.awayStats.pace)) / 2;
   const paceFactor = getPaceFactor(paceRaw);
   const homeLambda = clamp(
     (BASE_GOAL +

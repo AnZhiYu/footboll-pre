@@ -3,7 +3,7 @@ import { parseMatchPairs, parseTeamProfiles, upsertMatchPairs, upsertTeamProfile
 import type { TeamProfile } from '../types';
 
 describe('team import', () => {
-  it('parses team profile json with trailing commas', () => {
+  it('parses team profile json with trailing commas and optional pace', () => {
     expect(
       parseTeamProfiles(`[
         {
@@ -11,11 +11,12 @@ describe('team import', () => {
           "attack": 76,
           "defense": 74,
           "stability": 78,
+          "pace": 62,
         }
       ]`),
     ).toEqual({
       ok: true,
-      profiles: [{ team: '奥地利', attack: 76, defense: 74, stability: 78 }],
+      profiles: [{ team: '奥地利', attack: 76, defense: 74, stability: 78, pace: 62 }],
     });
   });
 
@@ -44,7 +45,7 @@ describe('team import', () => {
 });
 
 describe('match pair import', () => {
-  it('parses nested match pair json and ignores pace', () => {
+  it('parses nested match pair json with pace', () => {
     expect(
       parseMatchPairs(`[
         [
@@ -56,8 +57,8 @@ describe('match pair import', () => {
       ok: true,
       pairs: [
         [
-          { team: '葡萄牙', attack: 84, defense: 78, stability: 76 },
-          { team: '刚果民主共和国', attack: 48, defense: 55, stability: 58 },
+          { team: '葡萄牙', attack: 84, defense: 78, stability: 76, pace: 75 },
+          { team: '刚果民主共和国', attack: 48, defense: 55, stability: 58, pace: 38 },
         ],
       ],
     });
@@ -88,12 +89,12 @@ describe('match pair import', () => {
     ];
     const imported: [TeamProfile, TeamProfile][] = [
       [
-        { team: '加纳', attack: 68, defense: 58, stability: 58 },
-        { team: '巴拿马', attack: 55, defense: 56, stability: 60 },
+        { team: '加纳', attack: 68, defense: 58, stability: 58, pace: 72 },
+        { team: '巴拿马', attack: 55, defense: 56, stability: 60, pace: 65 },
       ],
       [
-        { team: '葡萄牙', attack: 84, defense: 78, stability: 76 },
-        { team: '刚果民主共和国', attack: 48, defense: 55, stability: 58 },
+        { team: '葡萄牙', attack: 84, defense: 78, stability: 76, pace: 75 },
+        { team: '刚果民主共和国', attack: 48, defense: 55, stability: 58, pace: 38 },
       ],
     ];
 
@@ -106,8 +107,8 @@ describe('match pair import', () => {
     ]);
     expect(result[1]).toMatchObject({
       id: 'old_1',
-      homeStats: { attack: 84, defense: 78, stability: 76 },
-      awayStats: { attack: 48, defense: 55, stability: 58 },
+      homeStats: { attack: 84, defense: 78, stability: 76, pace: 75 },
+      awayStats: { attack: 48, defense: 55, stability: 58, pace: 38 },
     });
   });
 });

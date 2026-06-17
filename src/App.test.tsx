@@ -128,7 +128,29 @@ describe('App', () => {
 
     teamButtons = screen.getAllByRole('button', { name: /使用球队/ });
     expect(teamButtons[0]).toHaveAccessibleName('使用球队 约旦');
-    expect(screen.getByText('攻 66 / 防 67 / 稳 68')).toBeInTheDocument();
+    expect(screen.getByText('攻 66 / 防 67 / 稳 68 / 节 50')).toBeInTheDocument();
+  });
+
+  it('copies the AI scoring prompt from the import panel', async () => {
+    const user = userEvent.setup();
+    const writeTextSpy = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: writeTextSpy,
+      },
+    });
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '导入球队数据' }));
+    await user.click(screen.getByRole('button', { name: '复制AI评分提示词' }));
+
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('"attack"'));
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('"defense"'));
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('"stability"'));
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('"pace"'));
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('二维数组'));
+    expect(screen.getByText(/AI评分提示词已复制/)).toBeInTheDocument();
   });
 
   it('imports nested match pair data directly into the match pool', async () => {
@@ -153,6 +175,34 @@ describe('App', () => {
     expect(screen.getByText('葡萄牙 vs 刚果民主共和国')).toBeInTheDocument();
     expect(screen.getByText('英格兰 vs 克罗地亚')).toBeInTheDocument();
     expect(screen.getByText(/已导入 2 场比赛/)).toBeInTheDocument();
+    expect(screen.getByLabelText('葡萄牙 vs 刚果民主共和国 指标解读')).toHaveTextContent('节奏 1.0');
+  });
+
+  it('shows metric insights on collapsed match cards and opens the global guide modal', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await addMatch(user, '英格兰', '克罗地亚');
+
+    const metricRegion = screen.getByLabelText('英格兰 vs 克罗地亚 指标解读');
+    expect(metricRegion).toHaveTextContent('xG');
+    expect(metricRegion).toHaveTextContent('节奏');
+    expect(metricRegion).toHaveTextContent('Top1');
+    expect(screen.getByText(/本场/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '展开赛事' }));
+    expect(screen.getByLabelText('球队A进攻')).toBeInTheDocument();
+    expect(screen.getByLabelText('球队A节奏')).toBeInTheDocument();
+    expect(document.querySelector('.analysis-strip')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '查看指标说明' }));
+    expect(screen.getByRole('dialog', { name: '指标说明' })).toBeInTheDocument();
+    expect(screen.getByText('单队预期进球 xG')).toBeInTheDocument();
+    expect(screen.getByText('比赛节奏 PaceFactor')).toBeInTheDocument();
+    expect(screen.getByText('Top1 精准比分置信度')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '关闭指标说明' }));
+    expect(screen.queryByRole('dialog', { name: '指标说明' })).not.toBeInTheDocument();
   });
 
   it('does not crash when old localStorage state has no version', () => {
