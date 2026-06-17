@@ -76,6 +76,7 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: '主线串' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '防冷串' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '混合串' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '大比分串' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '策略随机' }));
     expect(screen.getByRole('button', { name: '刷新随机' })).toBeInTheDocument();
@@ -162,6 +163,7 @@ describe('App', () => {
     expect(screen.getByText('主线')).toBeInTheDocument();
     expect(screen.getByText('覆盖')).toBeInTheDocument();
     expect(screen.getByText('防冷')).toBeInTheDocument();
+    expect(screen.getByText('大比分信号')).toBeInTheDocument();
   });
 
   it('removes deleted matches from selection', async () => {

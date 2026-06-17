@@ -7,6 +7,7 @@ import type {
   MatchAnalysis,
   ScorePick,
 } from '../types';
+import { getBigScoreCandidates } from './bigScore';
 
 export const STRATEGY_LABELS: Record<BaseComboStrategy, string> = {
   safe: '最稳',
@@ -62,9 +63,7 @@ const uniqueByLabel = (picks: ScorePick[]) => {
 
 const sortByProbability = (picks: ScorePick[]) => picks.sort((a, b) => b.probability - a.probability);
 
-const getLikelyHighScores = (analysis: MatchAnalysis) => analysis.matrix
-  .filter((pick) => pick.homeGoals + pick.awayGoals >= 3)
-  .slice(0, 12);
+const getLikelyHighScores = (analysis: MatchAnalysis) => getBigScoreCandidates(analysis, 12);
 
 const getCoverageScores = (analysis: MatchAnalysis) => {
   const midScorePool = analysis.matrix.filter((pick) => pick.homeGoals + pick.awayGoals === 3).slice(0, 2);

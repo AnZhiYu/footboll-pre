@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Copy, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import type { Match, MatchAnalysis, TeamStats } from '../types';
+import { getBigScoreSignal } from '../lib/bigScore';
 import { formatProbability, getScoreLayers } from '../lib/combo';
 import { getConfidenceInsight, getMatchVerdict, getPaceInsight, getXgInsight } from '../lib/insights';
 import { StatControl } from './StatControl';
@@ -38,6 +39,7 @@ export function MatchCard({
   const confidence = getConfidenceInsight(analysis.mostLikely.probability);
   const verdict = getMatchVerdict(analysis);
   const scoreLayers = getScoreLayers(analysis);
+  const bigScoreSignal = getBigScoreSignal(analysis);
 
   const copyTitle = async () => {
     await navigator.clipboard?.writeText(title);
@@ -92,6 +94,22 @@ export function MatchCard({
             <span>
               防冷 <strong>{scoreLayers.upset.map((pick) => pick.label).join(' / ')}</strong>
             </span>
+          </div>
+          <div
+            className="big-score-signal"
+            data-level={bigScoreSignal.level}
+            title={bigScoreSignal.tooltip}
+            aria-label={`${title} 大比分信号`}
+          >
+            <span>
+              大比分信号 <strong>{bigScoreSignal.label}</strong>
+            </span>
+            <span>{bigScoreSignal.reasons.slice(0, 3).join(' / ')}</span>
+            <strong>
+              {bigScoreSignal.level === 'low'
+                ? '观察为主'
+                : bigScoreSignal.candidates.slice(0, 4).map((pick) => pick.label).join(' / ')}
+            </strong>
           </div>
           <div className="metric-strip" aria-label={`${title} 指标解读`}>
             <span className="metric-chip" title={`${homeXg.tooltip} ${homeXg.bettingHint}`}>

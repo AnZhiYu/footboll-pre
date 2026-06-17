@@ -18,6 +18,7 @@ const strategyOptions: Array<{ value: ComboStrategy; label: string; icon: typeof
   { value: 'coverage', label: '覆盖串', icon: Shuffle },
   { value: 'upset', label: '防冷串', icon: Sparkles },
   { value: 'mixed', label: '混合串', icon: Flame },
+  { value: 'highScore', label: '大比分串', icon: Flame },
   { value: 'random', label: '策略随机', icon: Dice5 },
 ];
 

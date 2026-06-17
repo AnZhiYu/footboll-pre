@@ -86,18 +86,17 @@ describe('combo generator', () => {
       '3-1',
       '4-0',
     ]);
-    expect(getStrategyCandidates(analyses[0], 'highScore').every((pick) => pick.homeGoals + pick.awayGoals >= 3)).toBe(
+    expect(getStrategyCandidates(analyses[0], 'highScore').every((pick) => pick.homeGoals + pick.awayGoals >= 4)).toBe(
       true,
     );
     expect(getStrategyCandidates(analyses[0], 'highScore').map((pick) => pick.label)).toEqual([
-      '2-1',
-      '1-2',
       '2-2',
       '3-1',
       '4-0',
       '3-2',
       '4-1',
       '5-0',
+      '0-4',
     ]);
 
     const underdog = getStrategyCandidates(analyses[0], 'underdog');
