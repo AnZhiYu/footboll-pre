@@ -124,6 +124,20 @@ describe('combo generator', () => {
     expect(groups[0].plans[0].jointProbability).toBeGreaterThanOrEqual(groups[0].plans[1].jointProbability);
   });
 
+  it('applies per-match strategy overrides inside combo plans', () => {
+    const groups = buildComboGroups(analyses.slice(0, 2), 2, 'coverage', 0, {
+      2: { strategy: 'highScore' },
+    });
+    const firstPlan = groups[0].plans[0];
+    const overriddenPick = firstPlan.picks.find((pick) => pick.matchId === '2');
+    const globalPick = firstPlan.picks.find((pick) => pick.matchId === '1');
+
+    expect(globalPick?.strategyUsed).toBe('coverage');
+    expect(overriddenPick?.strategyUsed).toBe('highScore');
+    expect(overriddenPick).toBeDefined();
+    expect(overriddenPick!.score.homeGoals + overriddenPick!.score.awayGoals).toBeGreaterThanOrEqual(4);
+  });
+
   it('sorts large combo groups by their best plan probability', () => {
     const groups = buildComboGroups(analyses.slice(0, 4), 2, 'safe');
 

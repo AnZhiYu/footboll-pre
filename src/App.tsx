@@ -10,7 +10,7 @@ import { buildComboGroups } from './lib/combo';
 import { analyzeMatch } from './lib/poisson';
 import { createEmptyState, loadState, saveState } from './lib/storage';
 import { upsertMatchPairs, upsertTeamProfiles } from './lib/teamImport';
-import type { AppState, ComboStrategy, DirectionMarket, Match, TeamProfile } from './types';
+import type { AppState, BaseComboStrategy, ComboStrategy, DirectionMarket, Match, TeamProfile } from './types';
 import './styles.css';
 
 function App() {
@@ -42,9 +42,16 @@ function App() {
             effectiveComboType,
             state.uiState.strategy,
             state.uiState.randomSeed,
+            state.uiState.matchOverrides,
           )
         : [],
-    [effectiveComboType, selectedAnalyses, state.uiState.randomSeed, state.uiState.strategy],
+    [
+      effectiveComboType,
+      selectedAnalyses,
+      state.uiState.matchOverrides,
+      state.uiState.randomSeed,
+      state.uiState.strategy,
+    ],
   );
 
   useEffect(() => {
@@ -56,6 +63,12 @@ function App() {
     setState((current) => ({
       ...current,
       matchPool: [...current.matchPool, match],
+      uiState: {
+        ...current.uiState,
+        selectedMatchIds: current.uiState.selectedMatchIds.includes(match.id)
+          ? current.uiState.selectedMatchIds
+          : [...current.uiState.selectedMatchIds, match.id],
+      },
     }));
   };
 
@@ -87,6 +100,9 @@ function App() {
       uiState: {
         ...current.uiState,
         selectedMatchIds: current.uiState.selectedMatchIds.filter((id) => id !== matchId),
+        matchOverrides: Object.fromEntries(
+          Object.entries(current.uiState.matchOverrides).filter(([id]) => id !== matchId),
+        ),
       },
     }));
   };
@@ -140,6 +156,50 @@ function App() {
       return {
         ...current,
         uiState: { ...current.uiState, enabledMarkets },
+      };
+    });
+  };
+
+  const setMatchStrategyOverride = (matchId: string, strategy?: BaseComboStrategy) => {
+    setState((current) => {
+      const currentOverride = current.uiState.matchOverrides[matchId] ?? {};
+      const nextOverride = { ...currentOverride, strategy };
+      if (!strategy) {
+        delete nextOverride.strategy;
+      }
+
+      const matchOverrides = { ...current.uiState.matchOverrides };
+      if (Object.keys(nextOverride).length > 0) {
+        matchOverrides[matchId] = nextOverride;
+      } else {
+        delete matchOverrides[matchId];
+      }
+
+      return {
+        ...current,
+        uiState: { ...current.uiState, matchOverrides },
+      };
+    });
+  };
+
+  const setMatchMarketsOverride = (matchId: string, enabledMarkets?: DirectionMarket[]) => {
+    setState((current) => {
+      const currentOverride = current.uiState.matchOverrides[matchId] ?? {};
+      const nextOverride = { ...currentOverride, enabledMarkets };
+      if (!enabledMarkets) {
+        delete nextOverride.enabledMarkets;
+      }
+
+      const matchOverrides = { ...current.uiState.matchOverrides };
+      if (Object.keys(nextOverride).length > 0) {
+        matchOverrides[matchId] = nextOverride;
+      } else {
+        delete matchOverrides[matchId];
+      }
+
+      return {
+        ...current,
+        uiState: { ...current.uiState, matchOverrides },
       };
     });
   };
@@ -227,16 +287,21 @@ function App() {
             comboType={effectiveComboType}
             strategy={state.uiState.strategy}
             enabledMarkets={state.uiState.enabledMarkets}
+            selectedAnalyses={selectedAnalyses}
+            matchOverrides={state.uiState.matchOverrides}
             onComboTypeChange={setComboType}
             onStrategyChange={setStrategy}
             onRefreshRandom={refreshRandom}
             onToggleMarket={toggleMarket}
+            onMatchStrategyOverride={setMatchStrategyOverride}
+            onMatchMarketsOverride={setMatchMarketsOverride}
           />
           <ResultsPanel
             groups={comboGroups}
             selectedCount={selectedAnalyses.length}
             comboType={effectiveComboType}
             enabledMarkets={state.uiState.enabledMarkets}
+            matchOverrides={state.uiState.matchOverrides}
           />
         </aside>
       </div>

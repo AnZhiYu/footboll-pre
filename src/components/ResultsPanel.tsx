@@ -2,32 +2,54 @@ import { Check, Copy } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { formatProbability, STRATEGY_LABELS } from '../lib/combo';
 import { formatEnabledMarkets } from '../lib/markets';
-import type { ComboGroup, ComboPlanPick, DirectionMarket } from '../types';
+import type { ComboGroup, ComboPlanPick, DirectionMarket, MatchOverride } from '../types';
 
 type ResultsPanelProps = {
   groups: ComboGroup[];
   selectedCount: number;
   comboType: number;
   enabledMarkets: DirectionMarket[];
+  matchOverrides: Record<string, MatchOverride>;
 };
 
-const formatPickMarkets = (pick: ComboPlanPick, enabledMarkets: DirectionMarket[]) =>
-  formatEnabledMarkets(pick.score, pick.homeName, pick.awayName, enabledMarkets);
+const resolvePickMarkets = (
+  pick: ComboPlanPick,
+  enabledMarkets: DirectionMarket[],
+  matchOverrides: Record<string, MatchOverride>,
+) => matchOverrides[pick.matchId]?.enabledMarkets ?? enabledMarkets;
 
-const formatPickText = (pick: ComboPlanPick, enabledMarkets: DirectionMarket[]) => {
-  const markets = formatPickMarkets(pick, enabledMarkets);
+const formatPickMarkets = (
+  pick: ComboPlanPick,
+  enabledMarkets: DirectionMarket[],
+  matchOverrides: Record<string, MatchOverride>,
+) => formatEnabledMarkets(pick.score, pick.homeName, pick.awayName, resolvePickMarkets(pick, enabledMarkets, matchOverrides));
+
+const formatPickText = (
+  pick: ComboPlanPick,
+  enabledMarkets: DirectionMarket[],
+  matchOverrides: Record<string, MatchOverride>,
+) => {
+  const markets = formatPickMarkets(pick, enabledMarkets, matchOverrides);
   const details = [STRATEGY_LABELS[pick.strategyUsed], ...markets].join('｜');
   return `${pick.homeName}-${pick.awayName} ${pick.score.label}(${details})`;
 };
 
-const renderMarketTags = (pick: ComboPlanPick, enabledMarkets: DirectionMarket[]) =>
-  formatPickMarkets(pick, enabledMarkets).map((market) => (
+const renderMarketTags = (
+  pick: ComboPlanPick,
+  enabledMarkets: DirectionMarket[],
+  matchOverrides: Record<string, MatchOverride>,
+) =>
+  formatPickMarkets(pick, enabledMarkets, matchOverrides).map((market) => (
     <span className="market-tag" key={market}>
       {market}
     </span>
   ));
 
-const formatCopyText = (groups: ComboGroup[], enabledMarkets: DirectionMarket[]) =>
+const formatCopyText = (
+  groups: ComboGroup[],
+  enabledMarkets: DirectionMarket[],
+  matchOverrides: Record<string, MatchOverride>,
+) =>
   groups
     .map((group, groupIndex) => {
       const title = `大组合 ${groupIndex + 1}: ${group.matches
@@ -37,7 +59,7 @@ const formatCopyText = (groups: ComboGroup[], enabledMarkets: DirectionMarket[])
         .map(
           (plan, planIndex) =>
             `  方案${planIndex + 1} ${formatProbability(plan.jointProbability)}: ${plan.picks
-              .map((pick) => formatPickText(pick, enabledMarkets))
+              .map((pick) => formatPickText(pick, enabledMarkets, matchOverrides))
               .join('，')}`,
         )
         .join('\n');
@@ -45,12 +67,15 @@ const formatCopyText = (groups: ComboGroup[], enabledMarkets: DirectionMarket[])
     })
     .join('\n\n');
 
-export function ResultsPanel({ groups, selectedCount, comboType, enabledMarkets }: ResultsPanelProps) {
+export function ResultsPanel({ groups, selectedCount, comboType, enabledMarkets, matchOverrides }: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const visibleGroups = expanded ? groups : groups.slice(0, 3);
   const hiddenCount = Math.max(0, groups.length - 3);
-  const copyText = useMemo(() => formatCopyText(groups, enabledMarkets), [enabledMarkets, groups]);
+  const copyText = useMemo(
+    () => formatCopyText(groups, enabledMarkets, matchOverrides),
+    [enabledMarkets, groups, matchOverrides],
+  );
 
   const handleCopy = async () => {
     if (!copyText) {
@@ -123,7 +148,7 @@ export function ResultsPanel({ groups, selectedCount, comboType, enabledMarkets 
                         <strong className="pick-score">{pick.score.label}</strong>
                         <div className="pick-tags">
                           <span className="strategy-tag">策略:{STRATEGY_LABELS[pick.strategyUsed]}</span>
-                          {renderMarketTags(pick, enabledMarkets)}
+                          {renderMarketTags(pick, enabledMarkets, matchOverrides)}
                         </div>
                       </div>
                     ))}

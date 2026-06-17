@@ -9,7 +9,14 @@ describe('state storage', () => {
       version: CURRENT_STATE_VERSION,
       teamPool: [],
       matchPool: [],
-      uiState: { selectedMatchIds: [], comboType: 2, strategy: 'coverage', randomSeed: 0, enabledMarkets: [] },
+      uiState: {
+        selectedMatchIds: [],
+        comboType: 2,
+        strategy: 'coverage',
+        randomSeed: 0,
+        enabledMarkets: [],
+        matchOverrides: {},
+      },
     });
   });
 
@@ -48,7 +55,14 @@ describe('state storage', () => {
           awayStats: { attack: 75, defense: 65, stability: 70, pace: 50 },
         },
       ],
-      uiState: { selectedMatchIds: ['m_1'], comboType: 2, strategy: 'balanced', randomSeed: 0, enabledMarkets: [] },
+      uiState: {
+        selectedMatchIds: ['m_1'],
+        comboType: 2,
+        strategy: 'balanced',
+        randomSeed: 0,
+        enabledMarkets: [],
+        matchOverrides: {},
+      },
     });
   });
 
@@ -70,7 +84,13 @@ describe('state storage', () => {
         comboType: 2,
         strategy: 'safe' as const,
         randomSeed: 5,
-        enabledMarkets: ['winner' as const, 'btts' as const],
+        enabledMarkets: ['winner' as const, 'btts' as const, 'totalGoals' as const],
+        matchOverrides: {
+          m_1: {
+            strategy: 'highScore' as const,
+            enabledMarkets: ['totalGoals' as const],
+          },
+        },
       },
     };
 

@@ -12,13 +12,23 @@
   box-sizing: border-box;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 body {
   min-width: 320px;
   margin: 0;
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -134,7 +144,8 @@ label {
 input[type="text"],
 input:not([type]),
 input[type="number"],
-textarea {
+textarea,
+select {
   width: 100%;
   border: 1px solid #cbd5cc;
   border-radius: 6px;
@@ -145,7 +156,8 @@ textarea {
 
 input[type="text"],
 input:not([type]),
-input[type="number"] {
+input[type="number"],
+select {
   min-height: 40px;
 }
 
@@ -537,6 +549,86 @@ input:focus {
   width: 15px;
   height: 15px;
   accent-color: #246b49;
+}
+
+.single-match-overrides {
+  border-top: 1px solid #e4ebe5;
+  padding-top: 12px;
+}
+
+.override-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 38px;
+  border: 1px solid #d6dfd8;
+  border-radius: 6px;
+  padding: 0 10px;
+  color: #26392e;
+  background: #fbfdfb;
+  font-weight: 900;
+}
+
+.override-toggle span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.override-toggle strong {
+  border-radius: 999px;
+  background: #e8f1eb;
+  padding: 2px 7px;
+  color: #31523e;
+  font-size: 12px;
+}
+
+.override-list {
+  display: grid;
+  gap: 8px;
+}
+
+.override-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(112px, 0.8fr) minmax(104px, 0.7fr);
+  gap: 8px;
+  border: 1px solid #e3eae4;
+  border-radius: 6px;
+  background: #fbfdfb;
+  padding: 9px;
+}
+
+.override-row > strong {
+  align-self: center;
+  min-width: 0;
+  overflow: hidden;
+  color: #203629;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.override-row label {
+  font-size: 12px;
+}
+
+.override-row select {
+  min-height: 34px;
+  padding: 0 8px;
+}
+
+.override-market-options {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.market-option.compact {
+  min-height: 30px;
+  padding: 0 8px;
+  font-size: 12px;
 }
 
 .segmented button {
@@ -933,6 +1025,10 @@ input:focus {
   .pick-tags {
     grid-column: 1 / -1;
     justify-content: flex-start;
+  }
+
+  .override-row {
+    grid-template-columns: 1fr;
   }
 
   .mobile-action-bar {

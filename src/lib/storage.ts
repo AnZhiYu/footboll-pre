@@ -1,7 +1,17 @@
-import type { AppState, ComboStrategy, DirectionMarket, Match, TeamProfile, TeamStats, UiState } from '../types';
+import type {
+  AppState,
+  BaseComboStrategy,
+  ComboStrategy,
+  DirectionMarket,
+  Match,
+  MatchOverride,
+  TeamProfile,
+  TeamStats,
+  UiState,
+} from '../types';
 
 export const STORAGE_KEY = 'football_combo_v2_state';
-export const CURRENT_STATE_VERSION = 3;
+export const CURRENT_STATE_VERSION = 4;
 
 const DEFAULT_UI_STATE: UiState = {
   selectedMatchIds: [],
@@ -9,6 +19,7 @@ const DEFAULT_UI_STATE: UiState = {
   strategy: 'coverage',
   randomSeed: 0,
   enabledMarkets: [],
+  matchOverrides: {},
 };
 
 export const createEmptyState = (): AppState => ({
@@ -89,8 +100,39 @@ const isStrategy = (value: unknown): value is ComboStrategy =>
   value === 'mixed' ||
   value === 'random';
 
+const isBaseStrategy = (value: unknown): value is BaseComboStrategy => isStrategy(value) && value !== 'random';
+
 const isDirectionMarket = (value: unknown): value is DirectionMarket =>
-  value === 'winner' || value === 'overUnder25' || value === 'btts';
+  value === 'winner' || value === 'overUnder25' || value === 'btts' || value === 'totalGoals';
+
+const sanitizeMatchOverrides = (value: unknown, validMatchIds: Set<string>): Record<string, MatchOverride> => {
+  if (!value || typeof value !== 'object') {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([matchId]) => validMatchIds.has(matchId))
+      .map(([matchId, rawOverride]) => {
+        if (!rawOverride || typeof rawOverride !== 'object') {
+          return [matchId, {}];
+        }
+
+        const override = rawOverride as Record<string, unknown>;
+        const nextOverride: MatchOverride = {};
+        if (isBaseStrategy(override.strategy)) {
+          nextOverride.strategy = override.strategy;
+        }
+
+        if (Array.isArray(override.enabledMarkets)) {
+          nextOverride.enabledMarkets = override.enabledMarkets.filter(isDirectionMarket);
+        }
+
+        return [matchId, nextOverride];
+      })
+      .filter(([, override]) => Object.keys(override).length > 0),
+  );
+};
 
 const sanitizeUiState = (value: unknown, validMatchIds: Set<string>): UiState => {
   if (!value || typeof value !== 'object') {
@@ -120,6 +162,7 @@ const sanitizeUiState = (value: unknown, validMatchIds: Set<string>): UiState =>
     enabledMarkets: Array.isArray(uiState.enabledMarkets)
       ? uiState.enabledMarkets.filter(isDirectionMarket)
       : DEFAULT_UI_STATE.enabledMarkets,
+    matchOverrides: sanitizeMatchOverrides(uiState.matchOverrides, validMatchIds),
   };
 };
 
@@ -130,7 +173,7 @@ export const isCompatibleState = (value: unknown): value is AppState => {
 
   const state = value as Record<string, unknown>;
   return (
-    (state.version === CURRENT_STATE_VERSION || state.version === 2 || state.version === 1) &&
+    (state.version === CURRENT_STATE_VERSION || state.version === 3 || state.version === 2 || state.version === 1) &&
     typeof state.lastUpdated === 'string' &&
     (state.version === 1 || !('teamPool' in state) || (Array.isArray(state.teamPool) && state.teamPool.every(isTeamProfile))) &&
     Array.isArray(state.matchPool) &&

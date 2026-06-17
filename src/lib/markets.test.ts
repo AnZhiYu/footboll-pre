@@ -9,22 +9,23 @@ const score = (label: string): ScorePick => {
 
 describe('score markets', () => {
   it.each([
-    ['0-0', '平', '小', '否'],
-    ['1-1', '平', '小', '是'],
-    ['2-0', '球队A胜', '小', '否'],
-    ['2-1', '球队A胜', '大', '是'],
-    ['1-3', '球队B胜', '大', '是'],
-  ])('derives markets for %s', (label, winner, overUnder25, btts) => {
+    ['0-0', '平', '小', '否', '0球'],
+    ['1-1', '平', '小', '是', '2球'],
+    ['2-0', '球队A胜', '小', '否', '2球'],
+    ['2-1', '球队A胜', '大', '是', '3球'],
+    ['1-3', '球队B胜', '大', '是', '4球'],
+  ])('derives markets for %s', (label, winner, overUnder25, btts, totalGoals) => {
     expect(getScoreMarkets(score(label), '球队A', '球队B')).toEqual({
       winner,
       overUnder25,
       btts,
+      totalGoals,
     });
   });
 
   it('formats only enabled markets in the selected order', () => {
     expect(
-      formatEnabledMarkets(score('2-1'), '英格兰', '美国', ['winner', 'btts']),
-    ).toEqual(['胜平负:英格兰胜', 'BTTS:是']);
+      formatEnabledMarkets(score('2-1'), '英格兰', '美国', ['winner', 'totalGoals', 'btts']),
+    ).toEqual(['胜平负:英格兰胜', '进球数:3球', 'BTTS:是']);
   });
 });

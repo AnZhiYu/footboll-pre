@@ -5,6 +5,7 @@ import type {
   ComboPlanPick,
   ComboStrategy,
   MatchAnalysis,
+  MatchOverride,
   ScorePick,
 } from '../types';
 import { getBigScoreCandidates } from './bigScore';
@@ -14,7 +15,7 @@ export const STRATEGY_LABELS: Record<BaseComboStrategy, string> = {
   balanced: '混合串',
   underdog: '防冷串',
   goals: '覆盖串',
-  highScore: '大比分激进',
+  highScore: '大比分串',
   mainline: '主线串',
   coverage: '覆盖串',
   upset: '防冷串',
@@ -171,7 +172,15 @@ const resolveStrategy = (
   seed: number,
   groupId: string,
   matchId: string,
-): BaseComboStrategy => (strategy === 'random' ? getRandomStrategy(seed, groupId, matchId) : strategy);
+  overrides: Record<string, MatchOverride>,
+): BaseComboStrategy => {
+  const strategyOverride = overrides[matchId]?.strategy;
+  if (strategyOverride) {
+    return strategyOverride;
+  }
+
+  return strategy === 'random' ? getRandomStrategy(seed, groupId, matchId) : strategy;
+};
 
 const PLAN_LIMIT = 5;
 
@@ -185,9 +194,10 @@ const crossProductPlans = (
   strategy: ComboStrategy,
   randomSeed: number,
   groupId: string,
+  overrides: Record<string, MatchOverride>,
 ): ComboPlan[] => {
   const candidates = matches.map((match) => {
-    const strategyUsed = resolveStrategy(strategy, randomSeed, groupId, match.matchId);
+    const strategyUsed = resolveStrategy(strategy, randomSeed, groupId, match.matchId, overrides);
     return {
       strategyUsed,
       scores: getStrategyCandidates(match, strategyUsed),
@@ -232,10 +242,11 @@ export const buildComboGroups = (
   comboType: number,
   strategy: ComboStrategy,
   randomSeed = 0,
+  overrides: Record<string, MatchOverride> = {},
 ): ComboGroup[] => {
   const groups = combinations(analyses, comboType).map((matches, index) => {
     const groupId = matches.map((match) => match.matchId).join('-') || `group-${index + 1}`;
-    const plans = crossProductPlans(matches, strategy, randomSeed, groupId);
+    const plans = crossProductPlans(matches, strategy, randomSeed, groupId, overrides);
     return {
       id: groupId,
       matches,

@@ -24,6 +24,7 @@ describe('App', () => {
     await addMatch(user, '英格兰', '美国');
 
     expect(screen.getByText('英格兰 vs 美国')).toBeInTheDocument();
+    expect(screen.getByLabelText('选择 英格兰 vs 美国')).toBeChecked();
   });
 
   it('copies the match pairing when the pairing name is clicked', async () => {
@@ -50,7 +51,6 @@ describe('App', () => {
 
     for (let index = 1; index <= 5; index += 1) {
       await addMatch(user, `球队A${index}`, `球队B${index}`);
-      await user.click(screen.getByLabelText(`选择 球队A${index} vs 球队B${index}`));
     }
 
     await user.click(screen.getByRole('button', { name: '5串1' }));
@@ -65,9 +65,7 @@ describe('App', () => {
     render(<App />);
 
     await addMatch(user, '英格兰', '美国');
-    await user.click(screen.getByLabelText('选择 英格兰 vs 美国'));
     await addMatch(user, '巴西', '墨西哥');
-    await user.click(screen.getByLabelText('选择 巴西 vs 墨西哥'));
 
     expect(screen.queryByRole('button', { name: '最稳' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '覆盖串' }));
@@ -101,9 +99,7 @@ describe('App', () => {
     render(<App />);
 
     await addMatch(user, '英格兰', '美国');
-    await user.click(screen.getByLabelText('选择 英格兰 vs 美国'));
     await addMatch(user, '巴西', '墨西哥');
-    await user.click(screen.getByLabelText('选择 巴西 vs 墨西哥'));
 
     const probabilityBefore = screen.getAllByText(/\d+\.\d{2}%/)[0].textContent;
     expect(screen.queryByText(/胜平负:/)).not.toBeInTheDocument();
@@ -111,10 +107,12 @@ describe('App', () => {
     await user.click(screen.getByLabelText('胜平负方向'));
     await user.click(screen.getByLabelText('2.5 大小球'));
     await user.click(screen.getByLabelText('BTTS 双方进球'));
+    await user.click(screen.getByLabelText('进球数'));
 
     expect(screen.getAllByText(/胜平负:/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/2.5:/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/BTTS:/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/进球数:/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/\d+\.\d{2}%/)[0]).toHaveTextContent(probabilityBefore ?? '');
 
     await user.click(screen.getByRole('button', { name: '复制文本' }));
@@ -122,6 +120,25 @@ describe('App', () => {
     expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('胜平负:'));
     expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('2.5:'));
     expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('BTTS:'));
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('进球数:'));
+  });
+
+  it('allows a selected match to override strategy and direction markets', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await addMatch(user, '英格兰', '美国');
+    await addMatch(user, '巴西', '墨西哥');
+
+    expect(screen.getByText('单场覆盖设置')).toBeInTheDocument();
+    expect(screen.queryByLabelText('英格兰 vs 美国 策略覆盖')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '展开单场覆盖设置' }));
+    await user.selectOptions(screen.getByLabelText('英格兰 vs 美国 策略覆盖'), 'highScore');
+    await user.selectOptions(screen.getByLabelText('英格兰 vs 美国 方向覆盖'), 'custom');
+    await user.click(screen.getByLabelText('英格兰 vs 美国 进球数'));
+
+    expect(screen.getAllByText('策略:大比分串').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/进球数:/).length).toBeGreaterThan(0);
   });
 
   it('separates every match pick into readable rows inside each plan', async () => {
@@ -129,9 +146,7 @@ describe('App', () => {
     render(<App />);
 
     await addMatch(user, '英格兰', '美国');
-    await user.click(screen.getByLabelText('选择 英格兰 vs 美国'));
     await addMatch(user, '巴西', '墨西哥');
-    await user.click(screen.getByLabelText('选择 巴西 vs 墨西哥'));
     await user.click(screen.getByLabelText('胜平负方向'));
 
     expect(screen.getAllByLabelText(/方案 \d+ 场次明细/).length).toBeGreaterThan(0);
@@ -144,7 +159,7 @@ describe('App', () => {
   it('orders strategy buttons by recent backtest hit rate', async () => {
     render(<App />);
 
-    const strategyButtons = ['主线串', '覆盖串', '防冷串', '混合串', '策略随机'].map((name) =>
+    const strategyButtons = ['混合串', '覆盖串', '大比分串', '防冷串', '主线串', '策略随机'].map((name) =>
       screen.getByRole('button', { name }),
     );
 
@@ -171,7 +186,6 @@ describe('App', () => {
     render(<App />);
 
     await addMatch(user, '巴西', '墨西哥');
-    await user.click(screen.getByLabelText('选择 巴西 vs 墨西哥'));
     await user.click(screen.getByRole('button', { name: '删除 巴西 vs 墨西哥' }));
 
     expect(screen.queryByText('巴西 vs 墨西哥')).not.toBeInTheDocument();

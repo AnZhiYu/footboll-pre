@@ -30,6 +30,11 @@ export type BaseComboStrategy =
 
 export type ComboStrategy = BaseComboStrategy | 'random';
 
+export type MatchOverride = {
+  strategy?: BaseComboStrategy;
+  enabledMarkets?: DirectionMarket[];
+};
+
 export type ScorePick = {
   homeGoals: number;
   awayGoals: number;
@@ -80,9 +85,10 @@ export type UiState = {
   strategy: ComboStrategy;
   randomSeed: number;
   enabledMarkets: DirectionMarket[];
+  matchOverrides: Record<string, MatchOverride>;
 };
 
-export type DirectionMarket = 'winner' | 'overUnder25' | 'btts';
+export type DirectionMarket = 'winner' | 'overUnder25' | 'btts' | 'totalGoals';
 
 export type AppState = {
   version: number;
