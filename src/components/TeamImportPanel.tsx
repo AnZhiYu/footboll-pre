@@ -4,20 +4,86 @@ import { parseMatchPairs, parseTeamProfiles } from '../lib/teamImport';
 import type { TeamProfile } from '../types';
 
 const TEMPLATE = `[
-  {
-    "team": "奥地利",
-    "attack": 76,
-    "defense": 74,
-    "stability": 78,
-    "pace": 62
-  },
-  {
-    "team": "约旦",
-    "attack": 58,
-    "defense": 60,
-    "stability": 63,
-    "pace": 48
-  }
+  [
+    {
+      "team": "乌兹别克斯坦",
+      "attack": 52,
+      "defense": 58,
+      "stability": 50,
+      "pace": 46
+    },
+    {
+      "team": "哥伦比亚",
+      "attack": 78,
+      "defense": 70,
+      "stability": 74,
+      "pace": 62
+    }
+  ],
+  [
+    {
+      "team": "捷克",
+      "attack": 63,
+      "defense": 66,
+      "stability": 61,
+      "pace": 53
+    },
+    {
+      "team": "南非",
+      "attack": 56,
+      "defense": 54,
+      "stability": 52,
+      "pace": 58
+    }
+  ],
+  [
+    {
+      "team": "瑞士",
+      "attack": 68,
+      "defense": 82,
+      "stability": 80,
+      "pace": 44
+    },
+    {
+      "team": "波黑",
+      "attack": 65,
+      "defense": 59,
+      "stability": 57,
+      "pace": 56
+    }
+  ],
+  [
+    {
+      "team": "加拿大",
+      "attack": 66,
+      "defense": 60,
+      "stability": 62,
+      "pace": 64
+    },
+    {
+      "team": "卡塔尔",
+      "attack": 54,
+      "defense": 51,
+      "stability": 49,
+      "pace": 47
+    }
+  ],
+  [
+    {
+      "team": "墨西哥",
+      "attack": 72,
+      "defense": 69,
+      "stability": 68,
+      "pace": 59
+    },
+    {
+      "team": "韩国",
+      "attack": 74,
+      "defense": 67,
+      "stability": 66,
+      "pace": 67
+    }
+  ]
 ]`;
 
 const AI_SCORING_PROMPT = `你是一名职业足球数据分析师，熟悉世界杯、洲际杯与国家队战术体系。

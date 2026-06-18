@@ -247,6 +247,28 @@ describe('App', () => {
     expect(screen.getByText(/AI评分提示词已复制/)).toBeInTheDocument();
   });
 
+  it('uses the current default match-pair template for imports', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '导入球队数据' }));
+    await user.click(screen.getByRole('button', { name: '填入模版' }));
+
+    const templateValue = (screen.getByLabelText('球队数据 JSON') as HTMLTextAreaElement).value;
+    expect(templateValue).toContain('乌兹别克斯坦');
+    expect(templateValue).toContain('南非');
+    expect(templateValue).toContain('哥伦比亚');
+
+    await user.click(screen.getByRole('button', { name: '确认导入' }));
+
+    expect(screen.getByText('乌兹别克斯坦 vs 哥伦比亚')).toBeInTheDocument();
+    expect(screen.getByText('捷克 vs 南非')).toBeInTheDocument();
+    expect(screen.getByText('瑞士 vs 波黑')).toBeInTheDocument();
+    expect(screen.getByText('加拿大 vs 卡塔尔')).toBeInTheDocument();
+    expect(screen.getByText('墨西哥 vs 韩国')).toBeInTheDocument();
+    expect(screen.getByText(/已导入 5 场比赛/)).toBeInTheDocument();
+  });
+
   it('imports nested match pair data directly into the match pool', async () => {
     const user = userEvent.setup();
     render(<App />);
