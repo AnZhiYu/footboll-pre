@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Dice5, Flame, Goal, RefreshCcw, Shuffle, Sparkles } from 'lucide-react';
+import { BadgeDollarSign, ChevronDown, ChevronUp, Dice5, Flame, Goal, RefreshCcw, Shuffle, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { MARKET_LABELS } from '../lib/markets';
 import { STRATEGY_LABELS } from '../lib/combo';
@@ -21,15 +21,16 @@ type ControlPanelProps = {
 
 const strategyOptions: Array<{ value: ComboStrategy; label: string; icon: typeof Shuffle }> = [
   { value: 'mixed', label: '混合串', icon: Flame },
-  { value: 'coverage', label: '覆盖串', icon: Shuffle },
+  { value: 'value', label: '赔率价值串', icon: BadgeDollarSign },
+  { value: 'coverage', label: '备选串', icon: Shuffle },
   { value: 'highScore', label: '大比分串', icon: Flame },
-  { value: 'upset', label: '防冷串', icon: Sparkles },
+  { value: 'upset', label: '冷门防守串', icon: Sparkles },
   { value: 'mainline', label: '主线串', icon: Goal },
   { value: 'random', label: '策略随机', icon: Dice5 },
 ];
 
 const marketOptions: DirectionMarket[] = ['winner', 'overUnder25', 'btts', 'totalGoals'];
-const overrideStrategies: BaseComboStrategy[] = ['mixed', 'coverage', 'highScore', 'upset', 'mainline'];
+const overrideStrategies: BaseComboStrategy[] = ['mixed', 'value', 'coverage', 'highScore', 'upset', 'mainline'];
 
 export function ControlPanel({
   selectedCount,

@@ -11,6 +11,28 @@ export type Match = {
   awayName: string;
   homeStats: TeamStats;
   awayStats: TeamStats;
+  odds?: MatchOdds;
+};
+
+export type OddsSource = 'manual' | 'imported' | 'scraped';
+
+export type OutcomeOdds = {
+  teamAWin?: number;
+  draw?: number;
+  teamBWin?: number;
+};
+
+export type CorrectScoreOdd = {
+  score: string;
+  odds: number;
+  status?: 'open' | 'closed';
+};
+
+export type MatchOdds = {
+  source?: OddsSource;
+  updatedAt?: string;
+  winner?: OutcomeOdds;
+  correctScores?: CorrectScoreOdd[];
 };
 
 export type TeamProfile = TeamStats & {
@@ -26,6 +48,7 @@ export type BaseComboStrategy =
   | 'mainline'
   | 'coverage'
   | 'upset'
+  | 'value'
   | 'mixed';
 
 export type ComboStrategy = BaseComboStrategy | 'random';
@@ -41,6 +64,26 @@ export type ScorePick = {
   probability: number;
   label: string;
   rank: number;
+  odds?: number;
+  impliedProbability?: number;
+  normalizedImpliedProbability?: number;
+  valueIndex?: number;
+  expectedReturn?: number;
+};
+
+export type ProbabilityTriplet = {
+  teamAWin: number;
+  draw: number;
+  teamBWin: number;
+};
+
+export type MatchOddsSummary = {
+  correctScoreCount: number;
+  winner?: {
+    model: ProbabilityTriplet;
+    market: ProbabilityTriplet;
+    verdict: string;
+  };
 };
 
 export type MatchAnalysis = {
@@ -56,6 +99,7 @@ export type MatchAnalysis = {
   highScore: ScorePick;
   lowScore: ScorePick;
   topScores: ScorePick[];
+  oddsSummary?: MatchOddsSummary;
 };
 
 export type ComboPlanPick = {
@@ -86,6 +130,7 @@ export type UiState = {
   randomSeed: number;
   enabledMarkets: DirectionMarket[];
   matchOverrides: Record<string, MatchOverride>;
+  useOddsData: boolean;
 };
 
 export type DirectionMarket = 'winner' | 'overUnder25' | 'btts' | 'totalGoals';

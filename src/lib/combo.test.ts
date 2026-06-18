@@ -106,6 +106,28 @@ describe('combo generator', () => {
     expect(underdog.length).toBeLessThanOrEqual(8);
   });
 
+  it('prioritizes valuable odds candidates when odds values are available', () => {
+    const oddsAnalysis: MatchAnalysis = {
+      ...analyses[0],
+      matrix: analyses[0].matrix.map((pick) => {
+        if (pick.label === '4-1') {
+          return { ...pick, odds: 24, normalizedImpliedProbability: 0.01, valueIndex: 9 };
+        }
+
+        if (pick.label === '1-1') {
+          return { ...pick, odds: 5, normalizedImpliedProbability: 0.2, valueIndex: 1 };
+        }
+
+        return pick;
+      }),
+    };
+
+    const candidates = getStrategyCandidates(oddsAnalysis, 'value');
+
+    expect(candidates[0].label).toBe('4-1');
+    expect(candidates[0].valueIndex).toBe(9);
+  });
+
   it('builds score layers for each match', () => {
     const layers = getScoreLayers(analyses[0]);
 
@@ -120,7 +142,7 @@ describe('combo generator', () => {
 
     expect(groups).toHaveLength(1);
     expect(groups[0].matches).toHaveLength(5);
-    expect(groups[0].plans).toHaveLength(5);
+    expect(groups[0].plans).toHaveLength(7);
     expect(groups[0].plans[0].jointProbability).toBeGreaterThanOrEqual(groups[0].plans[1].jointProbability);
   });
 
@@ -190,7 +212,7 @@ describe('combo generator', () => {
     const duration = performance.now() - startedAt;
 
     expect(groups).toHaveLength(1);
-    expect(groups[0].plans).toHaveLength(5);
+    expect(groups[0].plans).toHaveLength(7);
     expect(groups[0].plans[0].picks).toHaveLength(20);
     expect(duration).toBeLessThan(100);
   });

@@ -38,9 +38,10 @@ button {
 
 .app-shell {
   width: min(1440px, 100%);
-  min-height: 100vh;
+  height: 100vh;
   margin: 0 auto;
   padding: 28px;
+  overflow: hidden;
 }
 
 .app-header {
@@ -79,6 +80,8 @@ h1 {
   grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
   gap: 18px;
   align-items: start;
+  height: calc(100vh - 118px);
+  min-height: 0;
 }
 
 .left-column,
@@ -86,11 +89,14 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .right-column {
-  position: sticky;
-  top: 18px;
+  position: static;
 }
 
 .panel,
@@ -265,9 +271,11 @@ input:focus {
 }
 
 .match-summary {
+  position: relative;
   display: grid;
   gap: 6px;
   min-width: 0;
+  padding-right: 34px;
 }
 
 .match-title-button {
@@ -301,6 +309,47 @@ input:focus {
   font-weight: 900;
 }
 
+.odds-detail-button {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d8e1da;
+  border-radius: 6px;
+  color: #31523e;
+  background: #ffffff;
+}
+
+.winner-value-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #dce8df;
+  border-radius: 6px;
+  background: #f6faf7;
+  padding: 6px 7px;
+  color: #526059;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.winner-value-strip strong {
+  color: #1f5d3f;
+}
+
+.winner-value-strip span,
+.winner-value-strip small {
+  border-radius: 5px;
+  background: #ffffff;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+
 .summary-grid {
   display: flex;
   flex-wrap: wrap;
@@ -324,18 +373,54 @@ input:focus {
   font-size: 12px;
 }
 
-.score-layer-grid span {
+.score-layer-grid section {
   display: grid;
-  gap: 3px;
+  gap: 5px;
   min-width: 0;
   border-radius: 6px;
   background: #f0f5f1;
   padding: 6px 7px;
 }
 
-.score-layer-grid strong {
-  overflow: hidden;
+.score-layer-grid h3 {
   color: #203629;
+  font-size: 12px;
+}
+
+.score-layer-grid section > div {
+  display: grid;
+  gap: 4px;
+}
+
+.score-pick-chip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 3px 6px;
+  min-width: 0;
+  border: 1px solid #dde8e0;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 5px 6px;
+}
+
+.score-pick-chip strong {
+  grid-row: span 3;
+  min-width: 42px;
+  border-radius: 5px;
+  background: #e0f1e6;
+  padding: 4px 5px;
+  color: #1f6b45;
+  text-align: center;
+  font-size: 13px;
+}
+
+.score-pick-chip small {
+  overflow: hidden;
+  color: #5f6d64;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -631,6 +716,13 @@ input:focus {
   font-size: 12px;
 }
 
+.odds-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .segmented button {
   min-width: 76px;
   border-color: #cfd9d0;
@@ -665,6 +757,232 @@ input:focus {
 .results-panel {
   display: grid;
   gap: 14px;
+}
+
+.score-board-toolbar {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #e2e9e3;
+  border-radius: 6px;
+  background: #fbfdfb;
+  padding: 10px;
+}
+
+.score-board-list {
+  display: grid;
+  gap: 8px;
+}
+
+.score-match-group {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #dfe7e1;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 8px;
+}
+
+.score-match-toggle {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  padding: 4px 2px;
+  color: #263a2d;
+  background: transparent;
+  text-align: left;
+}
+
+.score-match-title {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.score-match-title strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-match-title small,
+.score-match-summary {
+  color: #66756b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.score-match-summary {
+  grid-column: 2;
+  justify-self: start;
+  border-radius: 999px;
+  background: #eef4ef;
+  padding: 4px 8px;
+  white-space: normal;
+}
+
+.score-match-items {
+  display: grid;
+  gap: 7px;
+}
+
+.score-board-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e3eae4;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 9px;
+}
+
+.score-board-match {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.score-board-match strong {
+  overflow: hidden;
+  color: #25382c;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-board-match span {
+  color: #6b7a70;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.score-board-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 2 / -1;
+  gap: 5px;
+}
+
+.score-board-metrics span {
+  border-radius: 999px;
+  background: #eef4ef;
+  padding: 4px 7px;
+  color: #3d5145;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.score-board-row .pick-tags {
+  grid-column: 2 / -1;
+}
+
+.score-select-button {
+  width: 38px;
+  min-width: 38px;
+  min-height: 30px;
+  padding: 0;
+  font-size: 12px;
+}
+
+.score-select-button[aria-pressed="true"] {
+  border-color: #246b49;
+  color: #ffffff;
+  background: #246b49;
+}
+
+.slip-panel {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #dce6df;
+  border-radius: 6px;
+  background: #f7faf7;
+  padding: 10px;
+}
+
+.slip-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.slip-heading strong {
+  color: #203629;
+}
+
+.slip-heading span {
+  color: #627168;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.slip-list {
+  display: grid;
+  gap: 6px;
+}
+
+.slip-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 7px 8px;
+  color: #33483a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.slip-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.slip-main span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slip-main strong {
+  color: #1f6b45;
+}
+
+.slip-mode-toggle {
+  justify-self: end;
+}
+
+.slip-mode-toggle button {
+  min-height: 28px;
+  min-width: 52px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.slip-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 5px;
+}
+
+.slip-metrics span {
+  border-radius: 999px;
+  background: #eef4ef;
+  padding: 4px 7px;
+  color: #65736a;
+  font-weight: 900;
+}
+
+.slip-tags {
+  grid-column: 1 / -1;
 }
 
 .group-list {
@@ -805,6 +1123,11 @@ input:focus {
   background: #f7edd0;
 }
 
+.odds-tag {
+  color: #2d5c49;
+  background: #e2f1e8;
+}
+
 .expand-button {
   width: 100%;
 }
@@ -816,6 +1139,7 @@ input:focus {
 }
 
 .team-panel,
+.odds-panel,
 .team-import-box {
   display: grid;
   gap: 12px;
@@ -950,8 +1274,110 @@ input:focus {
   line-height: 1.45;
 }
 
+.odds-detail-modal {
+  width: min(780px, 100%);
+}
+
+.odds-detail-section {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.odds-detail-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.odds-detail-title h3 {
+  color: #24382c;
+  font-size: 15px;
+}
+
+.odds-detail-title strong {
+  border-radius: 999px;
+  background: #e3f1e8;
+  padding: 4px 8px;
+  color: #285f44;
+  font-size: 12px;
+}
+
+.odds-table,
+.score-odds-grid {
+  display: grid;
+  gap: 6px;
+}
+
+.odds-table-head,
+.odds-table-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 1fr) repeat(3, minmax(66px, 0.7fr));
+  gap: 8px;
+  align-items: center;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.odds-table-head {
+  color: #6b7870;
+  background: #eef4ef;
+  font-weight: 900;
+}
+
+.odds-table-row {
+  border: 1px solid #e2e9e3;
+  color: #405044;
+  background: #fbfdfb;
+  font-weight: 800;
+}
+
+.odds-table-row strong {
+  color: #203629;
+}
+
+.score-odds-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.score-odds-row {
+  display: grid;
+  grid-template-columns: 48px repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #e2e9e3;
+  border-radius: 6px;
+  background: #fbfdfb;
+  padding: 8px;
+  color: #536258;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.score-odds-row strong {
+  border-radius: 5px;
+  background: #e0f1e6;
+  padding: 4px 5px;
+  color: #1f6b45;
+  text-align: center;
+}
+
+.odds-empty {
+  border-radius: 6px;
+  background: #f7faf7;
+  padding: 10px;
+  color: #65736a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 @media (max-width: 960px) {
   .app-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
     padding: 18px 14px 84px;
   }
 
@@ -965,11 +1391,15 @@ input:focus {
   }
 
   .workspace {
+    height: auto;
     grid-template-columns: 1fr;
   }
 
+  .left-column,
   .right-column {
-    position: static;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
   }
 
   .match-form,
@@ -999,6 +1429,10 @@ input:focus {
     white-space: nowrap;
   }
 
+  .score-odds-grid {
+    grid-template-columns: 1fr;
+  }
+
   .big-score-signal {
     grid-template-columns: 1fr;
     align-items: start;
@@ -1020,6 +1454,25 @@ input:focus {
 
   .pick-row {
     grid-template-columns: 1fr auto;
+  }
+
+  .score-board-row {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+  }
+
+  .score-match-toggle {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .score-match-summary {
+    grid-column: 2;
+    justify-self: start;
+    white-space: normal;
+  }
+
+  .score-board-metrics,
+  .score-board-row .pick-tags {
+    grid-column: 2 / -1;
   }
 
   .pick-tags {
@@ -1098,5 +1551,25 @@ input:focus {
   .insight-modal {
     max-height: calc(100vh - 20px);
     padding: 14px;
+  }
+
+  .match-summary {
+    padding-right: 0;
+  }
+
+  .odds-detail-button {
+    position: static;
+    justify-self: start;
+  }
+
+  .winner-value-strip span,
+  .winner-value-strip small {
+    width: 100%;
+  }
+
+  .odds-table-head,
+  .odds-table-row,
+  .score-odds-row {
+    grid-template-columns: 1fr 1fr;
   }
 }

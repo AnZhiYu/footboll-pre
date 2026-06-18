@@ -16,6 +16,7 @@ describe('state storage', () => {
         randomSeed: 0,
         enabledMarkets: [],
         matchOverrides: {},
+        useOddsData: true,
       },
     });
   });
@@ -62,6 +63,7 @@ describe('state storage', () => {
         randomSeed: 0,
         enabledMarkets: [],
         matchOverrides: {},
+        useOddsData: true,
       },
     });
   });
@@ -77,6 +79,10 @@ describe('state storage', () => {
           awayName: '美国',
           homeStats: { attack: 85, defense: 70, stability: 80, pace: 70 },
           awayStats: { attack: 75, defense: 65, stability: 70, pace: 48 },
+          odds: {
+            winner: { teamAWin: 2.2, draw: 3.2, teamBWin: 3.4 },
+            correctScores: [{ score: '1-0', odds: 6.6, status: 'open' as const }],
+          },
         },
       ],
       uiState: {
@@ -85,6 +91,7 @@ describe('state storage', () => {
         strategy: 'safe' as const,
         randomSeed: 5,
         enabledMarkets: ['winner' as const, 'btts' as const, 'totalGoals' as const],
+        useOddsData: false,
         matchOverrides: {
           m_1: {
             strategy: 'highScore' as const,

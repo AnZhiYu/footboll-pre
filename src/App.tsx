@@ -2,25 +2,49 @@ import { useEffect, useMemo, useState } from 'react';
 import { Activity, RotateCcw } from 'lucide-react';
 import { MatchForm } from './components/MatchForm';
 import { MatchCard } from './components/MatchCard';
-import { ControlPanel } from './components/ControlPanel';
 import { ResultsPanel } from './components/ResultsPanel';
 import { TeamImportPanel } from './components/TeamImportPanel';
+import { OddsImportPanel } from './components/OddsImportPanel';
 import { InsightGuideModal } from './components/InsightGuideModal';
-import { buildComboGroups } from './lib/combo';
 import { analyzeMatch } from './lib/poisson';
 import { createEmptyState, loadState, saveState } from './lib/storage';
 import { upsertMatchPairs, upsertTeamProfiles } from './lib/teamImport';
-import type { AppState, BaseComboStrategy, ComboStrategy, DirectionMarket, Match, TeamProfile } from './types';
+import { applyOddsImports } from './lib/oddsImport';
+import type { OddsImportItem } from './lib/oddsImport';
+import type { AppState, DirectionMarket, Match, TeamProfile } from './types';
+import {
+  type ScoreBoardItem,
+  type SelectedSlipScores,
+  type SlipLegMode,
+  type SlipMatchSummary,
+  type ScoreSortKey,
+  type ScoreStrategyFilter,
+  buildScoreBoardItems,
+  calculateModelWinnerProbabilities,
+  toggleSelectedScore,
+  updateSelectedScoreMode,
+} from './lib/scoreBoard';
 import './styles.css';
 
 function App() {
   const [state, setState] = useState<AppState>(() => loadState());
   const [selectedTeam, setSelectedTeam] = useState<TeamProfile | null>(null);
   const [insightGuideOpen, setInsightGuideOpen] = useState(false);
+  const [scoreSortKey, setScoreSortKey] = useState<ScoreSortKey>('probability');
+  const [scoreStrategyFilter, setScoreStrategyFilter] = useState<ScoreStrategyFilter>('all');
+  const [scoreOddsOnly, setScoreOddsOnly] = useState(true);
+  const [selectedScores, setSelectedScores] = useState<SelectedSlipScores>({});
 
+  const effectiveMatchPool = useMemo(
+    () =>
+      state.uiState.useOddsData
+        ? state.matchPool
+        : state.matchPool.map((match) => ({ ...match, odds: undefined })),
+    [state.matchPool, state.uiState.useOddsData],
+  );
   const analyses = useMemo(
-    () => state.matchPool.map((match) => analyzeMatch(match)),
-    [state.matchPool],
+    () => effectiveMatchPool.map((match) => analyzeMatch(match)),
+    [effectiveMatchPool],
   );
   const analysisById = useMemo(
     () => new Map(analyses.map((analysis) => [analysis.matchId, analysis])),
@@ -33,25 +57,18 @@ function App() {
         .filter((analysis): analysis is NonNullable<typeof analysis> => Boolean(analysis)),
     [analysisById, state.uiState.selectedMatchIds],
   );
-  const effectiveComboType = Math.min(state.uiState.comboType, Math.max(2, selectedAnalyses.length));
-  const comboGroups = useMemo(
+  const scoreBoardItems = useMemo(() => buildScoreBoardItems(selectedAnalyses), [selectedAnalyses]);
+  const slipMatchSummaries = useMemo<SlipMatchSummary[]>(
     () =>
-      selectedAnalyses.length >= 2
-        ? buildComboGroups(
-            selectedAnalyses,
-            effectiveComboType,
-            state.uiState.strategy,
-            state.uiState.randomSeed,
-            state.uiState.matchOverrides,
-          )
-        : [],
-    [
-      effectiveComboType,
-      selectedAnalyses,
-      state.uiState.matchOverrides,
-      state.uiState.randomSeed,
-      state.uiState.strategy,
-    ],
+      selectedAnalyses.map((analysis) => {
+        const match = effectiveMatchPool.find((candidate) => candidate.id === analysis.matchId);
+        return {
+          matchId: analysis.matchId,
+          winnerOdds: match?.odds?.winner,
+          modelWinnerProbabilities: calculateModelWinnerProbabilities(analysis.matrix),
+        };
+      }),
+    [effectiveMatchPool, selectedAnalyses],
   );
 
   useEffect(() => {
@@ -80,10 +97,34 @@ function App() {
   };
 
   const importMatches = (pairs: [TeamProfile, TeamProfile][]) => {
-    setState((current) => ({
-      ...current,
-      matchPool: upsertMatchPairs(current.matchPool, pairs),
-    }));
+    setState((current) => {
+      const matchPool = upsertMatchPairs(current.matchPool, pairs);
+      const importedMatchIds = matchPool.slice(0, pairs.length).map((match) => match.id);
+      const selectedMatchIds = Array.from(new Set([...current.uiState.selectedMatchIds, ...importedMatchIds]));
+
+      return {
+        ...current,
+        matchPool,
+        uiState: {
+          ...current.uiState,
+          selectedMatchIds,
+          comboType: Math.min(current.uiState.comboType, Math.max(2, selectedMatchIds.length)),
+        },
+      };
+    });
+  };
+
+  const importOdds = (imports: OddsImportItem[]) => {
+    let importResult = { matches: state.matchPool, matchedCount: 0, unmatched: [] as string[] };
+    setState((current) => {
+      importResult = applyOddsImports(current.matchPool, imports);
+      return {
+        ...current,
+        matchPool: importResult.matches,
+      };
+    });
+
+    return importResult;
   };
 
   const updateMatch = (match: Match) => {
@@ -94,6 +135,9 @@ function App() {
   };
 
   const deleteMatch = (matchId: string) => {
+    setSelectedScores((current) =>
+      Object.fromEntries(Object.entries(current).filter(([itemId]) => !itemId.startsWith(`${matchId}:`))),
+    );
     setState((current) => ({
       ...current,
       matchPool: current.matchPool.filter((match) => match.id !== matchId),
@@ -105,6 +149,14 @@ function App() {
         ),
       },
     }));
+  };
+
+  const selectScore = (item: ScoreBoardItem) => {
+    setSelectedScores((current) => toggleSelectedScore(current, item));
+  };
+
+  const updateSlipLegMode = (itemId: string, mode: SlipLegMode) => {
+    setSelectedScores((current) => updateSelectedScoreMode(current, itemId, mode));
   };
 
   const toggleSelected = (matchId: string) => {
@@ -126,27 +178,6 @@ function App() {
     });
   };
 
-  const setComboType = (comboType: number) => {
-    setState((current) => ({
-      ...current,
-      uiState: { ...current.uiState, comboType },
-    }));
-  };
-
-  const setStrategy = (strategy: ComboStrategy) => {
-    setState((current) => ({
-      ...current,
-      uiState: { ...current.uiState, strategy },
-    }));
-  };
-
-  const refreshRandom = () => {
-    setState((current) => ({
-      ...current,
-      uiState: { ...current.uiState, randomSeed: current.uiState.randomSeed + 1 },
-    }));
-  };
-
   const toggleMarket = (market: DirectionMarket) => {
     setState((current) => {
       const enabledMarkets = current.uiState.enabledMarkets.includes(market)
@@ -160,48 +191,11 @@ function App() {
     });
   };
 
-  const setMatchStrategyOverride = (matchId: string, strategy?: BaseComboStrategy) => {
-    setState((current) => {
-      const currentOverride = current.uiState.matchOverrides[matchId] ?? {};
-      const nextOverride = { ...currentOverride, strategy };
-      if (!strategy) {
-        delete nextOverride.strategy;
-      }
-
-      const matchOverrides = { ...current.uiState.matchOverrides };
-      if (Object.keys(nextOverride).length > 0) {
-        matchOverrides[matchId] = nextOverride;
-      } else {
-        delete matchOverrides[matchId];
-      }
-
-      return {
-        ...current,
-        uiState: { ...current.uiState, matchOverrides },
-      };
-    });
-  };
-
-  const setMatchMarketsOverride = (matchId: string, enabledMarkets?: DirectionMarket[]) => {
-    setState((current) => {
-      const currentOverride = current.uiState.matchOverrides[matchId] ?? {};
-      const nextOverride = { ...currentOverride, enabledMarkets };
-      if (!enabledMarkets) {
-        delete nextOverride.enabledMarkets;
-      }
-
-      const matchOverrides = { ...current.uiState.matchOverrides };
-      if (Object.keys(nextOverride).length > 0) {
-        matchOverrides[matchId] = nextOverride;
-      } else {
-        delete matchOverrides[matchId];
-      }
-
-      return {
-        ...current,
-        uiState: { ...current.uiState, matchOverrides },
-      };
-    });
+  const toggleUseOddsData = () => {
+    setState((current) => ({
+      ...current,
+      uiState: { ...current.uiState, useOddsData: !current.uiState.useOddsData },
+    }));
   };
 
   const resetAll = () => {
@@ -241,6 +235,12 @@ function App() {
             onUseTeam={(team) => setSelectedTeam(team)}
           />
 
+          <OddsImportPanel
+            onImportOdds={importOdds}
+            useOddsData={state.uiState.useOddsData}
+            onToggleUseOddsData={toggleUseOddsData}
+          />
+
           <section className="match-pool">
             <div className="match-pool-heading">
               <div>
@@ -259,7 +259,7 @@ function App() {
                 <p>先添加对阵双方，再调整攻防稳定性参数。</p>
               </div>
             ) : (
-              state.matchPool.map((match) => {
+              effectiveMatchPool.map((match) => {
                 const analysis = analysisById.get(match.id);
                 if (!analysis) {
                   return null;
@@ -282,33 +282,29 @@ function App() {
         </section>
 
         <aside className="right-column">
-          <ControlPanel
-            selectedCount={selectedAnalyses.length}
-            comboType={effectiveComboType}
-            strategy={state.uiState.strategy}
-            enabledMarkets={state.uiState.enabledMarkets}
-            selectedAnalyses={selectedAnalyses}
-            matchOverrides={state.uiState.matchOverrides}
-            onComboTypeChange={setComboType}
-            onStrategyChange={setStrategy}
-            onRefreshRandom={refreshRandom}
-            onToggleMarket={toggleMarket}
-            onMatchStrategyOverride={setMatchStrategyOverride}
-            onMatchMarketsOverride={setMatchMarketsOverride}
-          />
           <ResultsPanel
-            groups={comboGroups}
+            items={scoreBoardItems}
             selectedCount={selectedAnalyses.length}
-            comboType={effectiveComboType}
             enabledMarkets={state.uiState.enabledMarkets}
             matchOverrides={state.uiState.matchOverrides}
+            slipMatchSummaries={slipMatchSummaries}
+            onToggleMarket={toggleMarket}
+            sortKey={scoreSortKey}
+            strategyFilter={scoreStrategyFilter}
+            oddsOnly={scoreOddsOnly}
+            selectedScores={selectedScores}
+            onSortKeyChange={setScoreSortKey}
+            onStrategyFilterChange={setScoreStrategyFilter}
+            onOddsOnlyChange={setScoreOddsOnly}
+            onSelectScore={selectScore}
+            onSlipLegModeChange={updateSlipLegMode}
           />
         </aside>
       </div>
 
       <div className="mobile-action-bar">
         <span>{selectedAnalyses.length} 场已选</span>
-        <strong>{selectedAnalyses.length >= 2 ? `${effectiveComboType}串1` : '待选择'}</strong>
+        <strong>{selectedAnalyses.length > 0 ? '比分池' : '待选择'}</strong>
       </div>
     </main>
   );

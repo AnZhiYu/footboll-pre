@@ -3,15 +3,18 @@ import type {
   BaseComboStrategy,
   ComboStrategy,
   DirectionMarket,
+  CorrectScoreOdd,
   Match,
+  MatchOdds,
   MatchOverride,
+  OutcomeOdds,
   TeamProfile,
   TeamStats,
   UiState,
 } from '../types';
 
 export const STORAGE_KEY = 'football_combo_v2_state';
-export const CURRENT_STATE_VERSION = 4;
+export const CURRENT_STATE_VERSION = 6;
 
 const DEFAULT_UI_STATE: UiState = {
   selectedMatchIds: [],
@@ -20,6 +23,7 @@ const DEFAULT_UI_STATE: UiState = {
   randomSeed: 0,
   enabledMarkets: [],
   matchOverrides: {},
+  useOddsData: true,
 };
 
 export const createEmptyState = (): AppState => ({
@@ -64,6 +68,60 @@ const normalizeTeamProfile = (profile: TeamProfile): TeamProfile => ({
   pace: typeof profile.pace === 'number' && Number.isFinite(profile.pace) ? profile.pace : 50,
 });
 
+const isPositiveOdds = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value > 1;
+
+const isOutcomeOdds = (value: unknown): value is OutcomeOdds => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const odds = value as Record<string, unknown>;
+  return [odds.teamAWin, odds.draw, odds.teamBWin].every(
+    (item) => item === undefined || isPositiveOdds(item),
+  );
+};
+
+const isCorrectScoreOdd = (value: unknown): value is CorrectScoreOdd => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const odd = value as Record<string, unknown>;
+  return (
+    typeof odd.score === 'string' &&
+    /^\d+-\d+$/.test(odd.score) &&
+    isPositiveOdds(odd.odds) &&
+    (odd.status === undefined || odd.status === 'open' || odd.status === 'closed')
+  );
+};
+
+const isMatchOdds = (value: unknown): value is MatchOdds => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const odds = value as Record<string, unknown>;
+  return (
+    (odds.winner === undefined || isOutcomeOdds(odds.winner)) &&
+    (odds.correctScores === undefined ||
+      (Array.isArray(odds.correctScores) && odds.correctScores.every(isCorrectScoreOdd)))
+  );
+};
+
+const normalizeOdds = (odds: MatchOdds | undefined): MatchOdds | undefined => {
+  if (!odds) {
+    return undefined;
+  }
+
+  return {
+    source: odds.source,
+    updatedAt: odds.updatedAt,
+    winner: odds.winner,
+    correctScores: odds.correctScores?.map((item) => ({ ...item })),
+  };
+};
+
 const isMatch = (value: unknown): value is Match => {
   if (!value || typeof value !== 'object') {
     return false;
@@ -75,7 +133,8 @@ const isMatch = (value: unknown): value is Match => {
     typeof match.homeName === 'string' &&
     typeof match.awayName === 'string' &&
     isStats(match.homeStats) &&
-    isStats(match.awayStats)
+    isStats(match.awayStats) &&
+    (match.odds === undefined || isMatchOdds(match.odds))
   );
 };
 
@@ -97,6 +156,7 @@ const isStrategy = (value: unknown): value is ComboStrategy =>
   value === 'mainline' ||
   value === 'coverage' ||
   value === 'upset' ||
+  value === 'value' ||
   value === 'mixed' ||
   value === 'random';
 
@@ -163,6 +223,7 @@ const sanitizeUiState = (value: unknown, validMatchIds: Set<string>): UiState =>
       ? uiState.enabledMarkets.filter(isDirectionMarket)
       : DEFAULT_UI_STATE.enabledMarkets,
     matchOverrides: sanitizeMatchOverrides(uiState.matchOverrides, validMatchIds),
+    useOddsData: typeof uiState.useOddsData === 'boolean' ? uiState.useOddsData : DEFAULT_UI_STATE.useOddsData,
   };
 };
 
@@ -173,7 +234,12 @@ export const isCompatibleState = (value: unknown): value is AppState => {
 
   const state = value as Record<string, unknown>;
   return (
-    (state.version === CURRENT_STATE_VERSION || state.version === 3 || state.version === 2 || state.version === 1) &&
+    (state.version === CURRENT_STATE_VERSION ||
+      state.version === 5 ||
+      state.version === 4 ||
+      state.version === 3 ||
+      state.version === 2 ||
+      state.version === 1) &&
     typeof state.lastUpdated === 'string' &&
     (state.version === 1 || !('teamPool' in state) || (Array.isArray(state.teamPool) && state.teamPool.every(isTeamProfile))) &&
     Array.isArray(state.matchPool) &&
@@ -202,7 +268,7 @@ export const loadState = (): AppState => {
       version: CURRENT_STATE_VERSION,
       lastUpdated: parsed.lastUpdated,
       teamPool: Array.isArray(parsed.teamPool) ? parsed.teamPool.map(normalizeTeamProfile) : [],
-      matchPool: parsed.matchPool.map(normalizeMatch),
+      matchPool: parsed.matchPool.map((match) => ({ ...normalizeMatch(match), odds: normalizeOdds(match.odds) })),
       uiState: sanitizeUiState(parsed.uiState, validMatchIds),
     };
   } catch {
@@ -220,7 +286,7 @@ export const saveState = (state: AppState) => {
     version: CURRENT_STATE_VERSION,
     lastUpdated: new Date().toISOString(),
     teamPool: state.teamPool.map(normalizeTeamProfile),
-    matchPool: state.matchPool.map(normalizeMatch),
+    matchPool: state.matchPool.map((match) => ({ ...normalizeMatch(match), odds: normalizeOdds(match.odds) })),
   };
 
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));

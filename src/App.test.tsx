@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
@@ -23,7 +23,7 @@ describe('App', () => {
 
     await addMatch(user, '英格兰', '美国');
 
-    expect(screen.getByText('英格兰 vs 美国')).toBeInTheDocument();
+    expect(screen.getAllByText('英格兰 vs 美国').length).toBeGreaterThan(0);
     expect(screen.getByLabelText('选择 英格兰 vs 美国')).toBeChecked();
   });
 
@@ -45,7 +45,7 @@ describe('App', () => {
     expect(screen.getByText('已复制')).toBeInTheDocument();
   });
 
-  it('shows 5x1 and generates a plan when five matches are selected', async () => {
+  it('shows a score board instead of generated combo plans when five matches are selected', async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -53,14 +53,13 @@ describe('App', () => {
       await addMatch(user, `球队A${index}`, `球队B${index}`);
     }
 
-    await user.click(screen.getByRole('button', { name: '5串1' }));
-
-    expect(screen.getByRole('button', { name: '5串1' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByText(/大组合 1/)).toBeInTheDocument();
-    expect(screen.getByText(/Top 5 比分方案/)).toBeInTheDocument();
+    expect(screen.getByLabelText('比分池工作台')).toHaveTextContent('比分池');
+    expect(screen.queryByRole('button', { name: '5串1' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/大组合 1/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Top 7 比分方案/)).not.toBeInTheDocument();
   });
 
-  it('shows layered combo strategy controls and can refresh random picks', async () => {
+  it('removes old combo controls and keeps direction markets in the results panel', async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -68,23 +67,16 @@ describe('App', () => {
     await addMatch(user, '巴西', '墨西哥');
 
     expect(screen.queryByRole('button', { name: '最稳' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '覆盖串' }));
-    expect(screen.getByRole('button', { name: '覆盖串' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByText(/大组合 1/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '主线串' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '防冷串' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '混合串' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '大比分串' })).toBeInTheDocument();
+    expect(screen.getByLabelText('比分池工作台')).toHaveTextContent('比分池');
+    expect(screen.queryByText('串关方式')).not.toBeInTheDocument();
+    expect(screen.queryByText('推荐策略')).not.toBeInTheDocument();
+    expect(screen.queryByText('单场覆盖设置')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '2串1' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '主线串' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: '策略随机' }));
-    expect(screen.getByRole('button', { name: '刷新随机' })).toBeInTheDocument();
-    expect(screen.getAllByText(/策略:/).length).toBeGreaterThan(0);
-
-    const before = screen.getAllByText(/策略:/).map((node) => node.textContent).join('|');
-    await user.click(screen.getByRole('button', { name: '刷新随机' }));
-    const after = screen.getAllByText(/策略:/).map((node) => node.textContent).join('|');
-
-    expect(after).not.toEqual(before);
+    const resultsPanel = screen.getByLabelText('比分池工作台');
+    expect(within(resultsPanel).getByLabelText('胜平负方向')).toBeInTheDocument();
+    expect(within(resultsPanel).getByLabelText('2.5 大小球')).toBeInTheDocument();
   });
 
   it('adds selected direction markets to results and copy text without changing probabilities', async () => {
@@ -117,31 +109,22 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: '复制文本' }));
 
-    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('胜平负:'));
-    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('2.5:'));
-    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('BTTS:'));
-    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('进球数:'));
+    expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('待串清单为空'));
   });
 
-  it('allows a selected match to override strategy and direction markets', async () => {
+  it('does not show single-match override controls', async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await addMatch(user, '英格兰', '美国');
     await addMatch(user, '巴西', '墨西哥');
 
-    expect(screen.getByText('单场覆盖设置')).toBeInTheDocument();
+    expect(screen.queryByText('单场覆盖设置')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('英格兰 vs 美国 策略覆盖')).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '展开单场覆盖设置' }));
-    await user.selectOptions(screen.getByLabelText('英格兰 vs 美国 策略覆盖'), 'highScore');
-    await user.selectOptions(screen.getByLabelText('英格兰 vs 美国 方向覆盖'), 'custom');
-    await user.click(screen.getByLabelText('英格兰 vs 美国 进球数'));
-
-    expect(screen.getAllByText('策略:大比分串').length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/进球数:/).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('比分池工作台')).toHaveTextContent('比分池');
   });
 
-  it('separates every match pick into readable rows inside each plan', async () => {
+  it('selects multiple scores from one match into a readable slip', async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -149,18 +132,75 @@ describe('App', () => {
     await addMatch(user, '巴西', '墨西哥');
     await user.click(screen.getByLabelText('胜平负方向'));
 
-    expect(screen.getAllByLabelText(/方案 \d+ 场次明细/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText('英格兰 vs 美国').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('巴西 vs 墨西哥').length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/策略:/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/胜平负:/).length).toBeGreaterThan(0);
+    await user.click(screen.getAllByRole('button', { name: /选择 英格兰 vs 美国/ })[0]);
+    expect(screen.getByLabelText('待串清单')).toHaveTextContent('已选 1 项');
+    expect(screen.getByLabelText('待串清单')).toHaveTextContent('英格兰 vs 美国');
+
+    await user.click(screen.getAllByRole('button', { name: /选择 英格兰 vs 美国/ })[1]);
+    expect(screen.getByLabelText('待串清单')).toHaveTextContent('已选 2 项');
+    expect(screen.getByLabelText('待串清单')).toHaveTextContent('计入 0 项');
+    expect(screen.getByLabelText('待串清单').querySelectorAll('.slip-row')).toHaveLength(2);
+    expect(screen.getByLabelText('待串清单')).toHaveTextContent('计赔');
+    expect(screen.getByLabelText('待串清单')).toHaveTextContent('计概');
   });
 
-  it('orders strategy buttons by recent backtest hit rate', async () => {
+  it('switches a selected slip leg between score and winner pricing', async () => {
+    const user = userEvent.setup();
     render(<App />);
 
-    const strategyButtons = ['混合串', '覆盖串', '大比分串', '防冷串', '主线串', '策略随机'].map((name) =>
-      screen.getByRole('button', { name }),
+    await addMatch(user, '英格兰', '美国');
+    await user.click(screen.getAllByRole('button', { name: /选择 英格兰 vs 美国/ })[0]);
+
+    const slip = screen.getByLabelText('待串清单');
+    expect(within(slip).getByRole('button', { name: '不选' })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(slip).getByText(/总赔率/)).toHaveTextContent('总赔率 1.00');
+    const before = within(slip).getByText(/总赔率/).textContent;
+    await user.click(within(slip).getByRole('button', { name: '胜平负' }));
+
+    expect(within(slip).getByRole('button', { name: '胜平负' })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(slip).getByText(/总赔率/).textContent).not.toBe(before);
+  });
+
+  it('groups score board rows by match and supports expanding match sections', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await addMatch(user, '英格兰', '美国');
+    await addMatch(user, '巴西', '墨西哥');
+
+    const englandGroup = screen.getByLabelText('英格兰 vs 美国 比分组');
+    const brazilGroup = screen.getByLabelText('巴西 vs 墨西哥 比分组');
+
+    expect(within(englandGroup).getByRole('button', { name: /收起 英格兰 vs 美国/ })).toBeInTheDocument();
+    expect(within(englandGroup).getAllByLabelText(/英格兰 vs 美国 .* 比分选项/).length).toBeGreaterThan(0);
+    expect(within(brazilGroup).getByRole('button', { name: /展开 巴西 vs 墨西哥/ })).toBeInTheDocument();
+    expect(within(brazilGroup).queryByLabelText(/巴西 vs 墨西哥 .* 比分选项/)).not.toBeInTheDocument();
+
+    await user.click(within(englandGroup).getByRole('button', { name: /收起 英格兰 vs 美国/ }));
+
+    expect(within(englandGroup).getByRole('button', { name: /展开 英格兰 vs 美国/ })).toBeInTheDocument();
+    expect(within(englandGroup).queryByLabelText(/英格兰 vs 美国 .* 比分选项/)).not.toBeInTheDocument();
+
+    await user.click(within(brazilGroup).getByRole('button', { name: /展开 巴西 vs 墨西哥/ }));
+
+    expect(within(brazilGroup).getByRole('button', { name: /收起 巴西 vs 墨西哥/ })).toBeInTheDocument();
+    expect(within(brazilGroup).getAllByLabelText(/巴西 vs 墨西哥 .* 比分选项/).length).toBeGreaterThan(0);
+  });
+
+  it('keeps score-board strategy filters in the recommended order', async () => {
+    render(<App />);
+
+    expect(screen.getByText(/至少选择 1 场比赛/)).toBeInTheDocument();
+  });
+
+  it('keeps score-board strategy filters in the recommended order after selecting a match', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await addMatch(user, '英格兰', '美国');
+
+    const strategyButtons = ['全部', '主线', '备选', '大比分', '冷门防守', '赔率价值'].map((name) =>
+      screen.getByRole('button', { name: `策略筛选 ${name}` }),
     );
 
     strategyButtons.slice(0, -1).forEach((button, index) => {
@@ -175,9 +215,9 @@ describe('App', () => {
 
     await addMatch(user, '英格兰', '美国');
 
-    expect(screen.getByText('主线')).toBeInTheDocument();
-    expect(screen.getByText('覆盖')).toBeInTheDocument();
-    expect(screen.getByText('防冷')).toBeInTheDocument();
+    expect(screen.getAllByText('主线').length).toBeGreaterThan(0);
+    expect(screen.getByText('备选比分')).toBeInTheDocument();
+    expect(screen.getAllByText('冷门防守').length).toBeGreaterThan(0);
     expect(screen.getByText('大比分信号')).toBeInTheDocument();
   });
 
@@ -189,7 +229,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '删除 巴西 vs 墨西哥' }));
 
     expect(screen.queryByText('巴西 vs 墨西哥')).not.toBeInTheDocument();
-    expect(screen.getAllByText(/至少选择 2 场比赛/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/至少选择 1 场比赛/).length).toBeGreaterThan(0);
   });
 
   it('imports team profiles, updates duplicates, and prefers imported teams first', async () => {
@@ -261,11 +301,11 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: '确认导入' }));
 
-    expect(screen.getByText('乌兹别克斯坦 vs 哥伦比亚')).toBeInTheDocument();
-    expect(screen.getByText('捷克 vs 南非')).toBeInTheDocument();
-    expect(screen.getByText('瑞士 vs 波黑')).toBeInTheDocument();
-    expect(screen.getByText('加拿大 vs 卡塔尔')).toBeInTheDocument();
-    expect(screen.getByText('墨西哥 vs 韩国')).toBeInTheDocument();
+    expect(screen.getAllByText('乌兹别克斯坦 vs 哥伦比亚').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('捷克 vs 南非').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('瑞士 vs 波黑').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('加拿大 vs 卡塔尔').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('墨西哥 vs 韩国').length).toBeGreaterThan(0);
     expect(screen.getByText(/已导入 5 场比赛/)).toBeInTheDocument();
   });
 
@@ -288,10 +328,224 @@ describe('App', () => {
     ]`);
     await user.click(screen.getByRole('button', { name: '确认导入' }));
 
-    expect(screen.getByText('葡萄牙 vs 刚果民主共和国')).toBeInTheDocument();
-    expect(screen.getByText('英格兰 vs 克罗地亚')).toBeInTheDocument();
+    expect(screen.getAllByText('葡萄牙 vs 刚果民主共和国').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('英格兰 vs 克罗地亚').length).toBeGreaterThan(0);
     expect(screen.getByText(/已导入 2 场比赛/)).toBeInTheDocument();
     expect(screen.getByLabelText('葡萄牙 vs 刚果民主共和国 指标解读')).toHaveTextContent('节奏 1.0');
+  });
+
+  it('imports odds separately, matches existing games, and shows odds metrics in results', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '导入球队数据' }));
+    await user.clear(screen.getByLabelText('球队数据 JSON'));
+    await user.click(screen.getByLabelText('球队数据 JSON'));
+    await user.paste(`[
+      [
+        {"team":"捷克","attack":63,"defense":66,"stability":61,"pace":53},
+        {"team":"南非","attack":56,"defense":54,"stability":52,"pace":58}
+      ],
+      [
+        {"team":"瑞士","attack":68,"defense":82,"stability":80,"pace":44},
+        {"team":"波黑","attack":65,"defense":59,"stability":57,"pace":56}
+      ]
+    ]`);
+    await user.click(screen.getByRole('button', { name: '确认导入' }));
+
+    await user.click(screen.getByRole('button', { name: '导入赔率数据' }));
+    await user.clear(screen.getByLabelText('赔率数据 JSON'));
+    await user.click(screen.getByLabelText('赔率数据 JSON'));
+    await user.paste(`[
+      {
+        "teamA": "捷克",
+        "teamB": "南非",
+        "odds": {
+          "winner": { "teamAWin": 2.20, "draw": 3.20, "teamBWin": 3.40 },
+          "correctScores": [{ "score": "1-0", "odds": 6.60 }]
+        }
+      },
+      {
+        "teamA": "波黑",
+        "teamB": "瑞士",
+        "odds": {
+          "winner": null,
+          "correctScores": [{ "score": "0-1", "odds": 6.30 }]
+        }
+      }
+    ]`);
+    await user.click(screen.getByRole('button', { name: '确认导入赔率' }));
+
+    expect(screen.getByText(/已匹配 2 场赔率/)).toBeInTheDocument();
+    expect(screen.queryByText(/赔率:胜平负/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/波胆 25项/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText('捷克 vs 南非 胜平负价值')).toHaveTextContent('胜平负价值');
+    expect(screen.getByLabelText('捷克 vs 南非 比分分层推荐')).toHaveTextContent('模型');
+    expect(screen.getByLabelText('捷克 vs 南非 比分分层推荐')).toHaveTextContent('赔 6.60');
+    expect(screen.getByLabelText('捷克 vs 南非 比分分层推荐')).toHaveTextContent('价值');
+    await user.click(screen.getByRole('button', { name: '查看赔率详情 捷克 vs 南非' }));
+    const oddsDialog = screen.getByRole('dialog', { name: '捷克 vs 南非 赔率详情' });
+    expect(oddsDialog).toBeInTheDocument();
+    expect(within(oddsDialog).getByText('胜平负价值')).toBeInTheDocument();
+    expect(within(oddsDialog).getByText('波胆赔率')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '关闭赔率详情' }));
+    expect(screen.getAllByText(/赔 6\.60|赔 6\.30/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/盘口/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/价值/).length).toBeGreaterThan(0);
+  });
+
+  it('can disable odds usage without deleting imported odds data', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '导入球队数据' }));
+    await user.clear(screen.getByLabelText('球队数据 JSON'));
+    await user.click(screen.getByLabelText('球队数据 JSON'));
+    await user.paste(`[
+      [
+        {"team":"捷克","attack":63,"defense":66,"stability":61,"pace":53},
+        {"team":"南非","attack":56,"defense":54,"stability":52,"pace":58}
+      ],
+      [
+        {"team":"瑞士","attack":68,"defense":82,"stability":80,"pace":44},
+        {"team":"波黑","attack":65,"defense":59,"stability":57,"pace":56}
+      ]
+    ]`);
+    await user.click(screen.getByRole('button', { name: '确认导入' }));
+
+    await user.click(screen.getByRole('button', { name: '导入赔率数据' }));
+    await user.clear(screen.getByLabelText('赔率数据 JSON'));
+    await user.click(screen.getByLabelText('赔率数据 JSON'));
+    await user.paste(`[
+      {
+        "teamA": "捷克",
+        "teamB": "南非",
+        "odds": {
+          "winner": { "teamAWin": 2.20, "draw": 3.20, "teamBWin": 3.40 },
+          "correctScores": [{ "score": "1-0", "odds": 6.60 }]
+        }
+      }
+    ]`);
+    await user.click(screen.getByRole('button', { name: '确认导入赔率' }));
+
+    expect(screen.getByLabelText('使用赔率数据')).toBeChecked();
+    expect(screen.getByLabelText('捷克 vs 南非 胜平负价值')).toBeInTheDocument();
+    expect(screen.getByLabelText('捷克 vs 南非 比分分层推荐')).toHaveTextContent('赔 6.60');
+    expect(screen.getAllByText(/赔 6\.60/).length).toBeGreaterThan(0);
+
+    await user.click(screen.getByLabelText('使用赔率数据'));
+
+    expect(screen.getByLabelText('使用赔率数据')).not.toBeChecked();
+    expect(screen.queryByLabelText('捷克 vs 南非 胜平负价值')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('捷克 vs 南非 比分分层推荐')).not.toHaveTextContent('赔 6.60');
+    expect(screen.queryByText(/赔 6\.60/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '查看赔率详情 捷克 vs 南非' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('使用赔率数据'));
+
+    expect(screen.getByLabelText('使用赔率数据')).toBeChecked();
+    expect(screen.getByLabelText('捷克 vs 南非 胜平负价值')).toBeInTheDocument();
+    expect(screen.getByLabelText('捷克 vs 南非 比分分层推荐')).toHaveTextContent('赔 6.60');
+  });
+
+  it('can filter the score board with the odds value strategy', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '导入球队数据' }));
+    await user.clear(screen.getByLabelText('球队数据 JSON'));
+    await user.click(screen.getByLabelText('球队数据 JSON'));
+    await user.paste(`[
+      [
+        {"team":"捷克","attack":63,"defense":66,"stability":61,"pace":53},
+        {"team":"南非","attack":56,"defense":54,"stability":52,"pace":58}
+      ],
+      [
+        {"team":"瑞士","attack":68,"defense":82,"stability":80,"pace":44},
+        {"team":"波黑","attack":65,"defense":59,"stability":57,"pace":56}
+      ]
+    ]`);
+    await user.click(screen.getByRole('button', { name: '确认导入' }));
+
+    await user.click(screen.getByRole('button', { name: '导入赔率数据' }));
+    await user.clear(screen.getByLabelText('赔率数据 JSON'));
+    await user.click(screen.getByLabelText('赔率数据 JSON'));
+    await user.paste(`[
+      {
+        "teamA": "捷克",
+        "teamB": "南非",
+        "odds": {
+          "correctScores": [{ "score": "4-1", "odds": 24.00 }, { "score": "1-1", "odds": 5.00 }]
+        }
+      },
+      {
+        "teamA": "瑞士",
+        "teamB": "波黑",
+        "odds": {
+          "correctScores": [{ "score": "2-1", "odds": 12.00 }, { "score": "1-0", "odds": 5.50 }]
+        }
+      }
+    ]`);
+    await user.click(screen.getByRole('button', { name: '确认导入赔率' }));
+    await user.click(screen.getByRole('button', { name: '策略筛选 赔率价值' }));
+
+    expect(screen.getByRole('button', { name: '策略筛选 赔率价值' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getAllByText(/赔率价值/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/价值/).length).toBeGreaterThan(0);
+  });
+
+  it('sorts and filters the score board by odds data', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '导入球队数据' }));
+    await user.clear(screen.getByLabelText('球队数据 JSON'));
+    await user.click(screen.getByLabelText('球队数据 JSON'));
+    await user.paste(`[
+      [
+        {"team":"捷克","attack":63,"defense":66,"stability":61,"pace":53},
+        {"team":"南非","attack":56,"defense":54,"stability":52,"pace":58}
+      ],
+      [
+        {"team":"瑞士","attack":68,"defense":82,"stability":80,"pace":44},
+        {"team":"波黑","attack":65,"defense":59,"stability":57,"pace":56}
+      ]
+    ]`);
+    await user.click(screen.getByRole('button', { name: '确认导入' }));
+
+    await user.click(screen.getByRole('button', { name: '导入赔率数据' }));
+    await user.clear(screen.getByLabelText('赔率数据 JSON'));
+    await user.click(screen.getByLabelText('赔率数据 JSON'));
+    await user.paste(`[
+      {
+        "teamA": "捷克",
+        "teamB": "南非",
+        "odds": {
+          "correctScores": [{ "score": "1-0", "odds": 6.60 }, { "score": "3-1", "odds": 22.00 }]
+        }
+      },
+      {
+        "teamA": "瑞士",
+        "teamB": "波黑",
+        "odds": {
+          "correctScores": [{ "score": "1-0", "odds": 5.50 }]
+        }
+      }
+    ]`);
+    await user.click(screen.getByRole('button', { name: '确认导入赔率' }));
+
+    expect(screen.queryByText(/大组合/)).not.toBeInTheDocument();
+    const czechGroup = screen.getByLabelText('捷克 vs 南非 比分组');
+    await user.click(within(czechGroup).getByRole('button', { name: /展开 捷克 vs 南非/ }));
+    expect(czechGroup).toHaveTextContent('赔 6.60');
+
+    await user.click(screen.getByRole('button', { name: '赔率' }));
+    const firstScore = within(czechGroup).getAllByLabelText(/比分选项/)[0];
+    expect(firstScore).toHaveTextContent('3-1');
+    expect(firstScore).toHaveTextContent('赔 22.00');
+
+    await user.click(screen.getByRole('button', { name: '策略筛选 大比分' }));
+    expect(screen.getByLabelText('比分池列表')).toHaveTextContent('大比分');
   });
 
   it('shows metric insights on collapsed match cards and opens the global guide modal', async () => {
@@ -304,7 +558,7 @@ describe('App', () => {
     expect(metricRegion).toHaveTextContent('xG');
     expect(metricRegion).toHaveTextContent('节奏');
     expect(metricRegion).toHaveTextContent('Top1');
-    expect(screen.getByText(/本场/)).toBeInTheDocument();
+    expect(document.querySelector('.match-verdict')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '展开赛事' }));
     expect(screen.getByLabelText('球队A进攻')).toBeInTheDocument();

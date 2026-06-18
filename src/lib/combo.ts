@@ -13,12 +13,13 @@ import { getBigScoreCandidates } from './bigScore';
 export const STRATEGY_LABELS: Record<BaseComboStrategy, string> = {
   safe: '最稳',
   balanced: '混合串',
-  underdog: '防冷串',
-  goals: '覆盖串',
+  underdog: '冷门防守串',
+  goals: '备选串',
   highScore: '大比分串',
   mainline: '主线串',
-  coverage: '覆盖串',
-  upset: '防冷串',
+  coverage: '备选串',
+  upset: '冷门防守串',
+  value: '赔率价值串',
   mixed: '混合串',
 };
 
@@ -77,6 +78,26 @@ const getUpsetScores = (analysis: MatchAnalysis) => {
   return uniqueByLabel([...basePool, ...highScorePool, ...analysis.matrix.slice(6)]).slice(0, 5);
 };
 
+const getValueScores = (analysis: MatchAnalysis) => {
+  const valuePool = analysis.matrix
+    .filter((pick) => typeof pick.valueIndex === 'number' && Number.isFinite(pick.valueIndex))
+    .sort((a, b) => {
+      const valueDiff = (b.valueIndex ?? 0) - (a.valueIndex ?? 0);
+      if (valueDiff !== 0) {
+        return valueDiff;
+      }
+
+      const returnDiff = (b.expectedReturn ?? 0) - (a.expectedReturn ?? 0);
+      if (returnDiff !== 0) {
+        return returnDiff;
+      }
+
+      return b.probability - a.probability;
+    });
+
+  return uniqueByLabel([...valuePool, ...getCoverageScores(analysis)]).slice(0, 6);
+};
+
 export const getScoreLayers = (analysis: MatchAnalysis) => {
   const mainline = analysis.matrix.slice(0, 2);
   const coverage = getCoverageScores(analysis);
@@ -112,6 +133,10 @@ export const getStrategyCandidates = (
 
   if (strategy === 'mixed') {
     return getScoreLayers(analysis).mixed;
+  }
+
+  if (strategy === 'value') {
+    return getValueScores(analysis);
   }
 
   if (strategy === 'goals') {
@@ -182,7 +207,7 @@ const resolveStrategy = (
   return strategy === 'random' ? getRandomStrategy(seed, groupId, matchId) : strategy;
 };
 
-const PLAN_LIMIT = 5;
+const PLAN_LIMIT = 7;
 
 type PartialComboPlan = {
   picks: ComboPlanPick[];

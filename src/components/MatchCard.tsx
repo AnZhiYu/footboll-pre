@@ -1,9 +1,10 @@
-import { ChevronDown, ChevronUp, Copy, Trash2 } from 'lucide-react';
+import { BadgeDollarSign, ChevronDown, ChevronUp, Copy, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import type { Match, MatchAnalysis, TeamStats } from '../types';
+import type { Match, MatchAnalysis, ProbabilityTriplet, ScorePick, TeamStats } from '../types';
 import { getBigScoreSignal } from '../lib/bigScore';
 import { formatProbability, getScoreLayers } from '../lib/combo';
-import { getConfidenceInsight, getMatchVerdict, getPaceInsight, getXgInsight } from '../lib/insights';
+import { getConfidenceInsight, getPaceInsight, getXgInsight } from '../lib/insights';
+import { OddsDetailModal } from './OddsDetailModal';
 import { StatControl } from './StatControl';
 
 type MatchCardProps = {
@@ -22,6 +23,29 @@ const statLabels: Array<[keyof TeamStats, string]> = [
   ['pace', '节奏'],
 ];
 
+const formatOdds = (value: number | undefined) => (value ? value.toFixed(2) : '无赔率');
+const formatValue = (value: number | undefined) => (value ? value.toFixed(2) : '-');
+
+const leadingOutcome = (probabilities: ProbabilityTriplet, homeName: string, awayName: string) => {
+  const entries = [
+    [`${homeName}胜`, probabilities.teamAWin],
+    ['平', probabilities.draw],
+    [`${awayName}胜`, probabilities.teamBWin],
+  ] as const;
+  return [...entries].sort((a, b) => b[1] - a[1])[0];
+};
+
+function ScorePickChip({ pick }: { pick: ScorePick }) {
+  return (
+    <span className="score-pick-chip" title={`${pick.label} 模型概率 ${formatProbability(pick.probability)}`}>
+      <strong>{pick.label}</strong>
+      <small>模型 {formatProbability(pick.probability)}</small>
+      <small>{pick.odds ? `赔 ${formatOdds(pick.odds)}` : '无赔率'}</small>
+      <small>价值 {formatValue(pick.valueIndex)}</small>
+    </span>
+  );
+}
+
 export function MatchCard({
   match,
   analysis,
@@ -37,9 +61,16 @@ export function MatchCard({
   const awayXg = getXgInsight(analysis.awayLambda);
   const pace = getPaceInsight(analysis.paceFactor);
   const confidence = getConfidenceInsight(analysis.mostLikely.probability);
-  const verdict = getMatchVerdict(analysis);
   const scoreLayers = getScoreLayers(analysis);
   const bigScoreSignal = getBigScoreSignal(analysis);
+  const [oddsOpen, setOddsOpen] = useState(false);
+  const winnerSummary = analysis.oddsSummary?.winner;
+  const winnerModelLead = winnerSummary
+    ? leadingOutcome(winnerSummary.model, match.homeName, match.awayName)
+    : undefined;
+  const winnerMarketLead = winnerSummary
+    ? leadingOutcome(winnerSummary.market, match.homeName, match.awayName)
+    : undefined;
 
   const copyTitle = async () => {
     await navigator.clipboard?.writeText(title);
@@ -84,16 +115,42 @@ export function MatchCard({
             <Copy size={15} />
             {copied ? <span className="copied-badge">已复制</span> : null}
           </button>
+          {match.odds ? (
+            <button
+              className="odds-detail-button"
+              type="button"
+              aria-label={`查看赔率详情 ${title}`}
+              title="查看赔率详情"
+              onClick={() => setOddsOpen(true)}
+            >
+              <BadgeDollarSign size={15} />
+            </button>
+          ) : null}
+          {winnerSummary && winnerModelLead && winnerMarketLead ? (
+            <div className="winner-value-strip" aria-label={`${title} 胜平负价值`}>
+              <strong>胜平负价值</strong>
+              <span>{winnerSummary.verdict}</span>
+              <small>
+                模型 {winnerModelLead[0]} {formatProbability(winnerModelLead[1])}
+              </small>
+              <small>
+                盘口 {winnerMarketLead[0]} {formatProbability(winnerMarketLead[1])}
+              </small>
+            </div>
+          ) : null}
           <div className="score-layer-grid" aria-label={`${title} 比分分层推荐`}>
-            <span>
-              主线 <strong>{scoreLayers.mainline.map((pick) => pick.label).join(' / ')}</strong>
-            </span>
-            <span>
-              覆盖 <strong>{scoreLayers.coverage.map((pick) => pick.label).join(' / ')}</strong>
-            </span>
-            <span>
-              防冷 <strong>{scoreLayers.upset.map((pick) => pick.label).join(' / ')}</strong>
-            </span>
+            <section>
+              <h3>主线</h3>
+              <div>{scoreLayers.mainline.map((pick) => <ScorePickChip key={pick.label} pick={pick} />)}</div>
+            </section>
+            <section>
+              <h3>备选比分</h3>
+              <div>{scoreLayers.coverage.map((pick) => <ScorePickChip key={pick.label} pick={pick} />)}</div>
+            </section>
+            <section>
+              <h3>冷门防守</h3>
+              <div>{scoreLayers.upset.map((pick) => <ScorePickChip key={pick.label} pick={pick} />)}</div>
+            </section>
           </div>
           <div
             className="big-score-signal"
@@ -127,7 +184,6 @@ export function MatchCard({
               <strong data-tone={confidence.tone}>{confidence.label}</strong>
             </span>
           </div>
-          <p className="match-verdict">{verdict}</p>
         </div>
         <button
           className="icon-button danger"
@@ -189,6 +245,7 @@ export function MatchCard({
 
         </div>
       ) : null}
+      <OddsDetailModal match={match} analysis={analysis} open={oddsOpen} onClose={() => setOddsOpen(false)} />
     </article>
   );
 }

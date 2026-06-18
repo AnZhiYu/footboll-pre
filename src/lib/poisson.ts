@@ -1,4 +1,5 @@
 import type { Match, MatchAnalysis, ScorePick } from '../types';
+import { enrichScoresWithOdds, summarizeOdds } from './odds';
 
 export const BASE_GOAL = 1.2;
 export const MAX_GOALS = 10;
@@ -73,7 +74,10 @@ const firstByTotalGoals = (matrix: ScorePick[], predicate: (totalGoals: number) 
 
 export const analyzeMatch = (match: Match): MatchAnalysis => {
   const expectedGoals = calculateExpectedGoals(match);
-  const matrix = createScoreMatrix(expectedGoals.homeLambda, expectedGoals.awayLambda);
+  const matrix = enrichScoresWithOdds(
+    createScoreMatrix(expectedGoals.homeLambda, expectedGoals.awayLambda),
+    match.odds,
+  );
 
   return {
     matchId: match.id,
@@ -85,5 +89,6 @@ export const analyzeMatch = (match: Match): MatchAnalysis => {
     highScore: firstByTotalGoals(matrix, (totalGoals) => totalGoals >= 4),
     lowScore: firstByTotalGoals(matrix, (totalGoals) => totalGoals <= 2),
     topScores: matrix.slice(0, 3),
+    oddsSummary: summarizeOdds(match, matrix),
   };
 };
