@@ -3,6 +3,8 @@ import { enrichScoresWithOdds, summarizeOdds } from './odds';
 
 export const BASE_GOAL = 1.2;
 export const MAX_GOALS = 10;
+export const NIL_NIL_TOURNAMENT_DISCOUNT = 0.5;
+export const ONE_NIL_TOURNAMENT_DISCOUNT = 0.8;
 export const FACTORIALS = [1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800] as const;
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
@@ -43,6 +45,21 @@ export const calculateExpectedGoals = (match: Match) => {
 const poissonProbability = (lambda: number, goals: number) =>
   (lambda ** goals * Math.exp(-lambda)) / FACTORIALS[goals];
 
+const getLowEventScoreDiscount = (pick: ScorePick) => {
+  if (pick.homeGoals === 0 && pick.awayGoals === 0) {
+    return NIL_NIL_TOURNAMENT_DISCOUNT;
+  }
+
+  if (
+    (pick.homeGoals === 1 && pick.awayGoals === 0) ||
+    (pick.homeGoals === 0 && pick.awayGoals === 1)
+  ) {
+    return ONE_NIL_TOURNAMENT_DISCOUNT;
+  }
+
+  return 1;
+};
+
 export const createScoreMatrix = (homeLambda: number, awayLambda: number): ScorePick[] => {
   const homeProbabilities = Array.from({ length: MAX_GOALS + 1 }, (_, goals) =>
     poissonProbability(homeLambda, goals),
@@ -62,6 +79,26 @@ export const createScoreMatrix = (homeLambda: number, awayLambda: number): Score
         rank: 0,
       });
     }
+  }
+
+  const discountedScores = matrix
+    .map((pick) => ({ pick, discount: getLowEventScoreDiscount(pick), originalProbability: pick.probability }))
+    .filter((item) => item.discount < 1);
+  const redistributedProbability = discountedScores.reduce(
+    (total, item) => total + item.originalProbability * (1 - item.discount),
+    0,
+  );
+  const redistributionTargets = matrix.filter((pick) => getLowEventScoreDiscount(pick) === 1);
+  const redistributionTargetTotal = redistributionTargets.reduce((total, pick) => total + pick.probability, 0);
+
+  discountedScores.forEach(({ pick, discount, originalProbability }) => {
+    pick.probability = originalProbability * discount;
+  });
+
+  if (redistributedProbability > 0 && redistributionTargetTotal > 0) {
+    redistributionTargets.forEach((pick) => {
+      pick.probability += redistributedProbability * (pick.probability / redistributionTargetTotal);
+    });
   }
 
   return matrix

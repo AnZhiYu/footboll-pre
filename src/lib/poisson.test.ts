@@ -3,7 +3,10 @@ import type { Match } from '../types';
 import {
   analyzeMatch,
   calculateExpectedGoals,
+  createScoreMatrix,
   getPaceFactor,
+  NIL_NIL_TOURNAMENT_DISCOUNT,
+  ONE_NIL_TOURNAMENT_DISCOUNT,
 } from './poisson';
 
 const makeMatch = (overrides: Partial<Match> = {}): Match => ({
@@ -81,5 +84,20 @@ describe('poisson engine', () => {
     expect(analysis.highScore.homeGoals + analysis.highScore.awayGoals).toBeGreaterThanOrEqual(4);
     expect(analysis.lowScore.homeGoals + analysis.lowScore.awayGoals).toBeLessThanOrEqual(2);
     expect(analysis.topScores).toHaveLength(3);
+  });
+
+  it('discounts low eventless scorelines for must-score tournament context while preserving total matrix probability', () => {
+    const matrix = createScoreMatrix(1.2, 1.2);
+    const nilNil = matrix.find((pick) => pick.label === '0-0');
+    const oneNil = matrix.find((pick) => pick.label === '1-0');
+    const nilOne = matrix.find((pick) => pick.label === '0-1');
+    const rawNilNilProbability = Math.exp(-1.2) * Math.exp(-1.2);
+    const rawOneGoalProbability = 1.2 * Math.exp(-1.2) * Math.exp(-1.2);
+    const adjustedTotal = matrix.reduce((total, pick) => total + pick.probability, 0);
+
+    expect(nilNil?.probability).toBeCloseTo(rawNilNilProbability * NIL_NIL_TOURNAMENT_DISCOUNT, 8);
+    expect(oneNil?.probability).toBeCloseTo(rawOneGoalProbability * ONE_NIL_TOURNAMENT_DISCOUNT, 8);
+    expect(nilOne?.probability).toBeCloseTo(rawOneGoalProbability * ONE_NIL_TOURNAMENT_DISCOUNT, 8);
+    expect(adjustedTotal).toBeCloseTo(1, 3);
   });
 });
