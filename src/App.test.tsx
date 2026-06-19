@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import App from './App';
+import App, { APP_VERSION, buildCacheBustedUrl } from './App';
 import { STORAGE_KEY } from './lib/storage';
 
 const addMatch = async (user: ReturnType<typeof userEvent.setup>, home: string, away: string) => {
@@ -15,6 +15,55 @@ const addMatch = async (user: ReturnType<typeof userEvent.setup>, home: string, 
 describe('App', () => {
   beforeEach(() => {
     localStorage.clear();
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('shows the product title and owner contact information', () => {
+    render(<App />);
+
+    expect(
+      screen.getByRole('heading', {
+        name: '世界杯预测-AI模型与盘口赔率对比工具',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '使用说明' })).toHaveAttribute('href', '#/guide');
+    expect(screen.getByText('wechat: grey1896')).toBeInTheDocument();
+    expect(screen.getByText(/本工具仅用于赛前数据整理、模型复盘与盘口赔率对比/)).toBeInTheDocument();
+    expect(screen.getByText(/请理性看待概率结果，远离赌博风险/)).toBeInTheDocument();
+    expect(screen.getByText(`版本: ${APP_VERSION}`)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '强制刷新' })).toBeInTheDocument();
+  });
+
+  it('opens a guide page that explains usage, strategies, model rules, and odds comparison', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('link', { name: '使用说明' }));
+
+    expect(screen.getByRole('heading', { name: '使用说明' })).toBeInTheDocument();
+    expect(screen.getByText('使用方法')).toBeInTheDocument();
+    expect(screen.getByText('策略说明')).toBeInTheDocument();
+    expect(screen.getByText('模型规则')).toBeInTheDocument();
+    expect(screen.getByText('盘口赔率对比')).toBeInTheDocument();
+    expect(screen.getByText('世界杯前序比赛回测')).toBeInTheDocument();
+    expect(screen.getByText(/样本：26 场已完赛对局/)).toBeInTheDocument();
+    expect(screen.getAllByText('16/26').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('61.5%').length).toBeGreaterThan(0);
+    expect(screen.getByText('Top7')).toBeInTheDocument();
+    expect(screen.getByText('胜平负方向')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('link', { name: '返回预测工具' }));
+
+    expect(screen.getByRole('heading', { name: '世界杯预测-AI模型与盘口赔率对比工具' })).toBeInTheDocument();
+  });
+
+  it('builds a cache-busted url for WeChat webview refreshes', () => {
+    expect(buildCacheBustedUrl('https://example.com/footboll-pre/?v=old#today', 2026061901)).toBe(
+      'https://example.com/footboll-pre/?v=2026061901#today',
+    );
+    expect(buildCacheBustedUrl('https://example.com/footboll-pre/', 2026061902)).toBe(
+      'https://example.com/footboll-pre/?v=2026061902',
+    );
   });
 
   it('adds matches to the empty pool', async () => {
@@ -246,7 +295,10 @@ describe('App', () => {
 
     await addMatch(user, '英格兰', '美国');
 
-    const strategyButtons = ['全部', '主线', '备选', '大比分', '冷门防守', '赔率价值'].map((name) =>
+    expect(screen.getByRole('button', { name: '策略筛选 主线' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: '返回顶部' })).toBeInTheDocument();
+
+    const strategyButtons = ['主线', '备选', '大比分', '冷门防守', '赔率价值', '全部'].map((name) =>
       screen.getByRole('button', { name: `策略筛选 ${name}` }),
     );
 
@@ -254,6 +306,20 @@ describe('App', () => {
       expect(Boolean(button.compareDocumentPosition(strategyButtons[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING))
         .toBe(true);
     });
+  });
+
+  it('marks the back-to-top action and guide tables for mobile-friendly styling', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await addMatch(user, '英格兰', '美国');
+
+    expect(screen.getByRole('button', { name: '返回顶部' })).toHaveClass('back-to-top-button');
+
+    await user.click(screen.getByRole('link', { name: '使用说明' }));
+
+    expect(screen.getAllByRole('table')[0].closest('.guide-table-wrap')).toBeInTheDocument();
+    expect(screen.getByText('世界杯前序比赛回测').closest('.guide-section')).toHaveClass('guide-backtest-section');
   });
 
   it('shows score layers on collapsed match cards', async () => {

@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronRight, Copy } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Copy, ArrowUp } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { formatProbability } from '../lib/combo';
 import { formatEnabledMarkets } from '../lib/markets';
@@ -42,12 +42,12 @@ const sortOptions: Array<{ key: ScoreSortKey; label: string; requiresOdds?: bool
 ];
 
 const strategyOptions: Array<{ key: ScoreStrategyFilter; label: string }> = [
-  { key: 'all', label: '全部' },
   { key: 'mainline', label: '主线' },
   { key: 'coverage', label: '备选' },
   { key: 'highScore', label: '大比分' },
   { key: 'upset', label: '冷门防守' },
   { key: 'value', label: '赔率价值' },
+  { key: 'all', label: '全部' },
 ];
 const marketOptions: DirectionMarket[] = ['winner', 'overUnder25', 'btts', 'totalGoals'];
 
@@ -213,6 +213,11 @@ export function ResultsPanel({
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
   };
+  const scrollToTop = () => {
+    document.querySelector('.left-column')?.scrollTo({ top: 0, behavior: 'smooth' });
+    document.querySelector('.right-column')?.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const toggleMatchGroup = (matchId: string) => {
     setOpenMatchIds((current) => {
       const next = new Set(current);
@@ -243,10 +248,16 @@ export function ResultsPanel({
             比分池 · {visibleItems.length} 项
           </strong>
         </div>
-        <button className="secondary-button" type="button" onClick={handleCopy}>
-          {copied ? <Check size={17} /> : <Copy size={17} />}
-          {copied ? '已复制' : '复制文本'}
-        </button>
+        <div className="results-heading-actions">
+          <button className="secondary-button back-to-top-button" type="button" onClick={scrollToTop}>
+            <ArrowUp size={17} />
+            返回顶部
+          </button>
+          <button className="secondary-button" type="button" onClick={handleCopy}>
+            {copied ? <Check size={17} /> : <Copy size={17} />}
+            {copied ? '已复制' : '复制文本'}
+          </button>
+        </div>
       </div>
 
       <div className="score-board-toolbar">
