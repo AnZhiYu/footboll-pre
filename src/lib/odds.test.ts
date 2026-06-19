@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Match } from '../types';
+import { getMidOddsCandidateInsight } from './odds';
 import { analyzeMatch } from './poisson';
 
 const match: Match = {
@@ -46,6 +47,46 @@ describe('odds analysis', () => {
         teamBWin: expect.any(Number),
       },
       verdict: expect.any(String),
+    });
+    expect(analysis.oddsSummary?.winner?.values.teamAWin).toBeGreaterThan(0);
+  });
+
+  it('identifies 7-15x middle-odds candidates when at least four conditions match', () => {
+    const canadaMatch: Match = {
+      id: 'm_2',
+      homeName: '加拿大',
+      awayName: '卡塔尔',
+      homeStats: { attack: 66, defense: 60, stability: 62, pace: 64 },
+      awayStats: { attack: 54, defense: 51, stability: 49, pace: 47 },
+      odds: {
+        winner: { teamAWin: 2.1, draw: 3.6, teamBWin: 3.7 },
+      },
+    };
+    const analysis = analyzeMatch(canadaMatch);
+    const insight = getMidOddsCandidateInsight(canadaMatch, analysis);
+
+    expect(insight.matchedCount).toBeGreaterThanOrEqual(4);
+    expect(insight.qualified).toBe(true);
+    expect(insight.conditions).toHaveLength(7);
+  });
+
+  it('uses the configured popular teams as the betting heat condition', () => {
+    const brazilMatch: Match = {
+      id: 'm_3',
+      homeName: '巴西',
+      awayName: '摩洛哥',
+      homeStats: { attack: 90, defense: 82, stability: 79, pace: 76 },
+      awayStats: { attack: 77, defense: 84, stability: 86, pace: 60 },
+      odds: {
+        winner: { teamAWin: 1.95, draw: 3.25, teamBWin: 4.2 },
+      },
+    };
+    const analysis = analyzeMatch(brazilMatch);
+    const insight = getMidOddsCandidateInsight(brazilMatch, analysis);
+
+    expect(insight.conditions.find((condition) => condition.key === 'popularHeat')).toMatchObject({
+      matched: true,
+      detail: '热门队伍: 巴西',
     });
   });
 });

@@ -4,6 +4,7 @@ import type { Match, MatchAnalysis, ProbabilityTriplet, ScorePick, TeamStats } f
 import { getBigScoreSignal } from '../lib/bigScore';
 import { formatProbability, getScoreLayers } from '../lib/combo';
 import { getConfidenceInsight, getPaceInsight, getXgInsight } from '../lib/insights';
+import { getMidOddsCandidateInsight } from '../lib/odds';
 import { OddsDetailModal } from './OddsDetailModal';
 import { StatControl } from './StatControl';
 
@@ -63,6 +64,7 @@ export function MatchCard({
   const confidence = getConfidenceInsight(analysis.mostLikely.probability);
   const scoreLayers = getScoreLayers(analysis);
   const bigScoreSignal = getBigScoreSignal(analysis);
+  const midOddsCandidate = getMidOddsCandidateInsight(match, analysis);
   const [oddsOpen, setOddsOpen] = useState(false);
   const winnerSummary = analysis.oddsSummary?.winner;
   const winnerModelLead = winnerSummary
@@ -136,6 +138,22 @@ export function MatchCard({
               <small>
                 盘口 {winnerMarketLead[0]} {formatProbability(winnerMarketLead[1])}
               </small>
+            </div>
+          ) : null}
+          {midOddsCandidate.qualified ? (
+            <div
+              className="mid-odds-candidate-strip"
+              aria-label={`${title} 中赔候选`}
+              title={midOddsCandidate.conditions.map((condition) => `${condition.matched ? '✓' : '×'} ${condition.label}: ${condition.detail}`).join('\n')}
+            >
+              <strong>中赔候选 {midOddsCandidate.matchedCount}/{midOddsCandidate.total}</strong>
+              <span>
+                {midOddsCandidate.conditions
+                  .filter((condition) => condition.matched)
+                  .slice(0, 3)
+                  .map((condition) => condition.label)
+                  .join(' / ')}
+              </span>
             </div>
           ) : null}
           <div className="score-layer-grid" aria-label={`${title} 比分分层推荐`}>

@@ -350,6 +350,34 @@ input:focus {
   font-size: 12px;
 }
 
+.mid-odds-candidate-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #edd9b7;
+  border-radius: 6px;
+  background: #fff8e8;
+  padding: 6px 7px;
+  color: #70522a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mid-odds-candidate-strip strong {
+  border-radius: 5px;
+  background: #f2d89e;
+  padding: 3px 6px;
+  color: #4d3514;
+}
+
+.mid-odds-candidate-strip span {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .summary-grid {
   display: flex;
   flex-wrap: wrap;
@@ -721,6 +749,16 @@ input:focus {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.match-pack-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.match-pack-select-label {
+  display: grid;
+  gap: 7px;
 }
 
 .segmented button {
@@ -1313,7 +1351,7 @@ input:focus {
 .odds-table-head,
 .odds-table-row {
   display: grid;
-  grid-template-columns: minmax(96px, 1fr) repeat(3, minmax(66px, 0.7fr));
+  grid-template-columns: minmax(96px, 1fr) repeat(4, minmax(66px, 0.7fr));
   gap: 8px;
   align-items: center;
   border-radius: 6px;
@@ -1336,6 +1374,15 @@ input:focus {
 
 .odds-table-row strong {
   color: #203629;
+}
+
+.score-odds-sort {
+  justify-content: flex-start;
+}
+
+.score-odds-sort button {
+  flex: 0 0 auto;
+  min-width: 78px;
 }
 
 .score-odds-grid {
@@ -1563,8 +1610,10 @@ input:focus {
   }
 
   .winner-value-strip span,
-  .winner-value-strip small {
+  .winner-value-strip small,
+  .mid-odds-candidate-strip span {
     width: 100%;
+    white-space: normal;
   }
 
   .odds-table-head,

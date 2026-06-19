@@ -183,7 +183,10 @@ export const filterAndSortScoreBoardItems = (
       : oddsFiltered.filter((item) => item.strategyKeys.includes(options.strategy));
 
   return [...strategyFiltered].sort((a, b) => {
-    const sortDiff = scoreSortValue(b, options.sortKey) - scoreSortValue(a, options.sortKey);
+    const sortDiff =
+      options.sortKey === 'odds'
+        ? scoreSortValue(a, options.sortKey) - scoreSortValue(b, options.sortKey)
+        : scoreSortValue(b, options.sortKey) - scoreSortValue(a, options.sortKey);
     if (sortDiff !== 0) {
       return sortDiff;
     }

@@ -36,6 +36,38 @@ describe('big score signal', () => {
     expect(getBigScoreCandidates(analysis, 4).map((pick) => pick.label)).toContain('4-0');
   });
 
+  it('raises collapse-with-consolation matches even when pace is not fast', () => {
+    const analysis = analyzeMatch({
+      id: 'm_4',
+      homeName: '强队',
+      awayName: '有反击弱队',
+      homeStats: { attack: 88, defense: 72, stability: 78, pace: 56 },
+      awayStats: { attack: 66, defense: 50, stability: 54, pace: 52 },
+    });
+
+    const signal = getBigScoreSignal(analysis);
+    const labels = getBigScoreCandidates(analysis, 6).map((pick) => pick.label);
+
+    expect(['medium', 'high']).toContain(signal.level);
+    expect(signal.reasons).toContain('弱侧有反击进球窗口');
+    expect(labels.indexOf('3-1')).toBeLessThan(labels.indexOf('4-0'));
+  });
+
+  it('flags real review samples where a strong defense can still punish a fragile opponent', () => {
+    const analysis = analyzeMatch({
+      id: 'm_5',
+      homeName: '瑞士',
+      awayName: '波黑',
+      homeStats: { attack: 68, defense: 82, stability: 80, pace: 44 },
+      awayStats: { attack: 65, defense: 59, stability: 57, pace: 56 },
+    });
+
+    const signal = getBigScoreSignal(analysis);
+
+    expect(['medium', 'high']).toContain(signal.level);
+    expect(signal.reasons).toContain('弱侧防线脆弱');
+  });
+
   it('keeps slow low-xG matches as weak big-score signals', () => {
     const analysis = analyzeMatch({
       id: 'm_3',

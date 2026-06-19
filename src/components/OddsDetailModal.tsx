@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { formatProbability } from '../lib/combo';
 import type { Match, MatchAnalysis, OutcomeOdds, ProbabilityTriplet, ScorePick } from '../types';
 
@@ -11,6 +12,7 @@ type OddsDetailModalProps = {
 
 const formatOdds = (value: number | undefined) => (value ? value.toFixed(2) : '-');
 const formatValue = (value: number | undefined) => (value ? value.toFixed(2) : '-');
+type ScoreOddsSortKey = 'probability' | 'odds' | 'value';
 
 const outcomeRows = (
   match: Match,
@@ -23,35 +25,52 @@ const outcomeRows = (
     odds: odds?.teamAWin,
     model: model?.teamAWin,
     market: market?.teamAWin,
+    value: market?.teamAWin ? (model?.teamAWin ?? 0) / market.teamAWin : undefined,
   },
   {
     label: '平',
     odds: odds?.draw,
     model: model?.draw,
     market: market?.draw,
+    value: market?.draw ? (model?.draw ?? 0) / market.draw : undefined,
   },
   {
     label: `${match.awayName}胜`,
     odds: odds?.teamBWin,
     model: model?.teamBWin,
     market: market?.teamBWin,
+    value: market?.teamBWin ? (model?.teamBWin ?? 0) / market.teamBWin : undefined,
   },
 ];
 
 const scoreByLabel = (matrix: ScorePick[]) => new Map(matrix.map((pick) => [pick.label, pick]));
 
 export function OddsDetailModal({ match, analysis, open, onClose }: OddsDetailModalProps) {
+  const [scoreSortKey, setScoreSortKey] = useState<ScoreOddsSortKey>('probability');
+  const scoreMap = useMemo(() => scoreByLabel(analysis.matrix), [analysis.matrix]);
+  const correctScores = useMemo(
+    () =>
+      [...(match.odds?.correctScores ?? [])].sort((a, b) => {
+        const aPick = scoreMap.get(a.score);
+        const bPick = scoreMap.get(b.score);
+        if (scoreSortKey === 'odds') {
+          return a.odds - b.odds;
+        }
+
+        if (scoreSortKey === 'value') {
+          return (bPick?.valueIndex ?? -1) - (aPick?.valueIndex ?? -1);
+        }
+
+        return (bPick?.probability ?? 0) - (aPick?.probability ?? 0);
+      }),
+    [match.odds?.correctScores, scoreMap, scoreSortKey],
+  );
+
   if (!open) {
     return null;
   }
 
   const title = `${match.homeName} vs ${match.awayName}`;
-  const scoreMap = scoreByLabel(analysis.matrix);
-  const correctScores = [...(match.odds?.correctScores ?? [])].sort((a, b) => {
-    const aPick = scoreMap.get(a.score);
-    const bPick = scoreMap.get(b.score);
-    return (bPick?.probability ?? 0) - (aPick?.probability ?? 0);
-  });
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -80,6 +99,7 @@ export function OddsDetailModal({ match, analysis, open, onClose }: OddsDetailMo
                     <span>赔率</span>
                     <span>模型</span>
                     <span>盘口</span>
+                    <span>价值</span>
                   </div>
                   {outcomeRows(
                     match,
@@ -92,6 +112,7 @@ export function OddsDetailModal({ match, analysis, open, onClose }: OddsDetailMo
                       <span>{formatOdds(row.odds)}</span>
                       <span>{row.model === undefined ? '-' : formatProbability(row.model)}</span>
                       <span>{row.market === undefined ? '-' : formatProbability(row.market)}</span>
+                      <span>{formatValue(row.value)}</span>
                     </div>
                   ))}
                 </div>
@@ -104,6 +125,17 @@ export function OddsDetailModal({ match, analysis, open, onClose }: OddsDetailMo
               <div className="odds-detail-title">
                 <h3>波胆赔率</h3>
                 <strong>{correctScores.length} 项</strong>
+              </div>
+              <div className="score-odds-sort segmented" aria-label="波胆赔率排序">
+                <button type="button" aria-pressed={scoreSortKey === 'probability'} onClick={() => setScoreSortKey('probability')}>
+                  模型排序
+                </button>
+                <button type="button" aria-pressed={scoreSortKey === 'odds'} onClick={() => setScoreSortKey('odds')}>
+                  赔率排序
+                </button>
+                <button type="button" aria-pressed={scoreSortKey === 'value'} onClick={() => setScoreSortKey('value')}>
+                  价值排序
+                </button>
               </div>
               {correctScores.length > 0 ? (
                 <div className="score-odds-grid">

@@ -1,0 +1,418 @@
+[
+  [
+    {
+      "team": "墨西哥",
+      "attack": 72,
+      "defense": 69,
+      "stability": 68,
+      "pace": 59
+    },
+    {
+      "team": "南非",
+      "attack": 56,
+      "defense": 54,
+      "stability": 52,
+      "pace": 58
+    }
+  ],
+  [
+    {
+      "team": "韩国",
+      "attack": 74,
+      "defense": 67,
+      "stability": 66,
+      "pace": 67
+    },
+    {
+      "team": "捷克",
+      "attack": 63,
+      "defense": 66,
+      "stability": 61,
+      "pace": 53
+    }
+  ],
+  [
+    {
+      "team": "加拿大",
+      "attack": 66,
+      "defense": 60,
+      "stability": 62,
+      "pace": 64
+    },
+    {
+      "team": "波黑",
+      "attack": 65,
+      "defense": 59,
+      "stability": 57,
+      "pace": 56
+    }
+  ],
+  [
+    {
+      "team": "卡塔尔",
+      "attack": 54,
+      "defense": 51,
+      "stability": 49,
+      "pace": 47
+    },
+    {
+      "team": "瑞士",
+      "attack": 68,
+      "defense": 82,
+      "stability": 80,
+      "pace": 44
+    }
+  ],
+  [
+    {
+      "team": "巴西",
+      "attack": 88,
+      "defense": 83,
+      "stability": 86,
+      "pace": 58
+    },
+    {
+      "team": "摩洛哥",
+      "attack": 70,
+      "defense": 80,
+      "stability": 78,
+      "pace": 48
+    }
+  ],
+  [
+    {
+      "team": "海地",
+      "attack": 42,
+      "defense": 40,
+      "stability": 38,
+      "pace": 55
+    },
+    {
+      "team": "苏格兰",
+      "attack": 64,
+      "defense": 67,
+      "stability": 63,
+      "pace": 51
+    }
+  ],
+  [
+    {
+      "team": "美国",
+      "attack": 73,
+      "defense": 68,
+      "stability": 70,
+      "pace": 61
+    },
+    {
+      "team": "巴拉圭",
+      "attack": 61,
+      "defense": 62,
+      "stability": 59,
+      "pace": 54
+    }
+  ],
+  [
+    {
+      "team": "澳大利亚",
+      "attack": 62,
+      "defense": 65,
+      "stability": 64,
+      "pace": 57
+    },
+    {
+      "team": "土耳其",
+      "attack": 67,
+      "defense": 61,
+      "stability": 60,
+      "pace": 63
+    }
+  ],
+  [
+    {
+      "team": "德国",
+      "attack": 90,
+      "defense": 81,
+      "stability": 84,
+      "pace": 62
+    },
+    {
+      "team": "库拉索",
+      "attack": 36,
+      "defense": 33,
+      "stability": 30,
+      "pace": 52
+    }
+  ],
+  [
+    {
+      "team": "荷兰",
+      "attack": 82,
+      "defense": 84,
+      "stability": 83,
+      "pace": 53
+    },
+    {
+      "team": "日本",
+      "attack": 76,
+      "defense": 73,
+      "stability": 75,
+      "pace": 66
+    }
+  ],
+  [
+    {
+      "team": "科特迪瓦",
+      "attack": 71,
+      "defense": 60,
+      "stability": 62,
+      "pace": 65
+    },
+    {
+      "team": "厄瓜多尔",
+      "attack": 65,
+      "defense": 64,
+      "stability": 61,
+      "pace": 56
+    }
+  ],
+  [
+    {
+      "team": "瑞典",
+      "attack": 70,
+      "defense": 72,
+      "stability": 71,
+      "pace": 54
+    },
+    {
+      "team": "突尼斯",
+      "attack": 60,
+      "defense": 66,
+      "stability": 63,
+      "pace": 49
+    }
+  ],
+  [
+    {
+      "team": "西班牙",
+      "attack": 87,
+      "defense": 85,
+      "stability": 88,
+      "pace": 56
+    },
+    {
+      "team": "佛得角",
+      "attack": 41,
+      "defense": 44,
+      "stability": 40,
+      "pace": 51
+    }
+  ],
+  [
+    {
+      "team": "比利时",
+      "attack": 80,
+      "defense": 76,
+      "stability": 77,
+      "pace": 59
+    },
+    {
+      "team": "埃及",
+      "attack": 63,
+      "defense": 64,
+      "stability": 60,
+      "pace": 53
+    }
+  ],
+  [
+    {
+      "team": "沙特阿拉伯",
+      "attack": 53,
+      "defense": 55,
+      "stability": 50,
+      "pace": 48
+    },
+    {
+      "team": "乌拉圭",
+      "attack": 77,
+      "defense": 82,
+      "stability": 81,
+      "pace": 47
+    }
+  ],
+  [
+    {
+      "team": "伊朗",
+      "attack": 58,
+      "defense": 69,
+      "stability": 67,
+      "pace": 45
+    },
+    {
+      "team": "新西兰",
+      "attack": 40,
+      "defense": 43,
+      "stability": 39,
+      "pace": 50
+    }
+  ],
+  [
+    {
+      "team": "法国",
+      "attack": 92,
+      "defense": 86,
+      "stability": 90,
+      "pace": 57
+    },
+    {
+      "team": "塞内加尔",
+      "attack": 74,
+      "defense": 68,
+      "stability": 66,
+      "pace": 69
+    }
+  ],
+  [
+    {
+      "team": "伊拉克",
+      "attack": 44,
+      "defense": 46,
+      "stability": 41,
+      "pace": 54
+    },
+    {
+      "team": "挪威",
+      "attack": 81,
+      "defense": 70,
+      "stability": 69,
+      "pace": 64
+    }
+  ],
+  [
+    {
+      "team": "阿根廷",
+      "attack": 93,
+      "defense": 80,
+      "stability": 89,
+      "pace": 60
+    },
+    {
+      "team": "阿尔及利亚",
+      "attack": 69,
+      "defense": 66,
+      "stability": 64,
+      "pace": 62
+    }
+  ],
+  [
+    {
+      "team": "奥地利",
+      "attack": 68,
+      "defense": 65,
+      "stability": 63,
+      "pace": 58
+    },
+    {
+      "team": "约旦",
+      "attack": 39,
+      "defense": 37,
+      "stability": 35,
+      "pace": 51
+    }
+  ],
+  [
+    {
+      "team": "葡萄牙",
+      "attack": 86,
+      "defense": 79,
+      "stability": 84,
+      "pace": 55
+    },
+    {
+      "team": "刚果(金)",
+      "attack": 64,
+      "defense": 58,
+      "stability": 56,
+      "pace": 67
+    }
+  ],
+  [
+    {
+      "team": "英格兰",
+      "attack": 89,
+      "defense": 87,
+      "stability": 88,
+      "pace": 54
+    },
+    {
+      "team": "克罗地亚",
+      "attack": 78,
+      "defense": 83,
+      "stability": 85,
+      "pace": 46
+    }
+  ],
+  [
+    {
+      "team": "加纳",
+      "attack": 67,
+      "defense": 63,
+      "stability": 61,
+      "pace": 64
+    },
+    {
+      "team": "巴拿马",
+      "attack": 51,
+      "defense": 53,
+      "stability": 49,
+      "pace": 52
+    }
+  ],
+  [
+    {
+      "team": "乌兹别克斯坦",
+      "attack": 52,
+      "defense": 58,
+      "stability": 50,
+      "pace": 46
+    },
+    {
+      "team": "哥伦比亚",
+      "attack": 78,
+      "defense": 70,
+      "stability": 74,
+      "pace": 62
+    }
+  ],
+  [
+    {
+      "team": "捷克",
+      "attack": 63,
+      "defense": 66,
+      "stability": 61,
+      "pace": 53
+    },
+    {
+      "team": "南非",
+      "attack": 56,
+      "defense": 54,
+      "stability": 52,
+      "pace": 58
+    }
+  ],
+  [
+    {
+      "team": "瑞士",
+      "attack": 68,
+      "defense": 82,
+      "stability": 80,
+      "pace": 44
+    },
+    {
+      "team": "波黑",
+      "attack": 65,
+      "defense": 59,
+      "stability": 57,
+      "pace": 56
+    }
+  ]
+]

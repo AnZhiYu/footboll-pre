@@ -39,6 +39,17 @@ export type TeamProfile = TeamStats & {
   team: string;
 };
 
+export type MatchPack = {
+  id: string;
+  label: string;
+  matches: [TeamProfile, TeamProfile][];
+  odds: {
+    teamA: string;
+    teamB: string;
+    odds: MatchOdds;
+  }[];
+};
+
 export type BaseComboStrategy =
   | 'safe'
   | 'balanced'
@@ -82,6 +93,7 @@ export type MatchOddsSummary = {
   winner?: {
     model: ProbabilityTriplet;
     market: ProbabilityTriplet;
+    values: ProbabilityTriplet;
     verdict: string;
   };
 };

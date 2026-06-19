@@ -43,10 +43,10 @@ describe('score board', () => {
     expect(filterAndSortScoreBoardItems(buildScoreBoardItems([analysis(false)]), { oddsOnly: true, strategy: 'all', sortKey: 'odds' })).toHaveLength(5);
   });
 
-  it('sorts by odds, market, value, and probability descending', () => {
+  it('sorts by odds ascending and other score metrics descending', () => {
     const items = buildScoreBoardItems([analysis()]);
 
-    expect(filterAndSortScoreBoardItems(items, { oddsOnly: true, strategy: 'all', sortKey: 'odds' })[0].score.label).toBe('4-1');
+    expect(filterAndSortScoreBoardItems(items, { oddsOnly: true, strategy: 'all', sortKey: 'odds' })[0].score.label).toBe('1-0');
     expect(filterAndSortScoreBoardItems(items, { oddsOnly: true, strategy: 'all', sortKey: 'market' })[0].score.label).toBe('1-0');
     expect(filterAndSortScoreBoardItems(items, { oddsOnly: true, strategy: 'all', sortKey: 'value' })[0].score.label).toBe('4-1');
     expect(filterAndSortScoreBoardItems(items, { oddsOnly: true, strategy: 'all', sortKey: 'probability' })[0].score.label).toBe('1-0');

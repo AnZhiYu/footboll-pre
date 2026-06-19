@@ -6,12 +6,14 @@ import { ResultsPanel } from './components/ResultsPanel';
 import { TeamImportPanel } from './components/TeamImportPanel';
 import { OddsImportPanel } from './components/OddsImportPanel';
 import { InsightGuideModal } from './components/InsightGuideModal';
+import { MatchPackPanel } from './components/MatchPackPanel';
 import { analyzeMatch } from './lib/poisson';
 import { createEmptyState, loadState, saveState } from './lib/storage';
 import { upsertMatchPairs, upsertTeamProfiles } from './lib/teamImport';
 import { applyOddsImports } from './lib/oddsImport';
+import { MATCH_PACKS, buildStateFromMatchPack } from './lib/matchPacks';
 import type { OddsImportItem } from './lib/oddsImport';
-import type { AppState, DirectionMarket, Match, TeamProfile } from './types';
+import type { AppState, DirectionMarket, Match, MatchPack, TeamProfile } from './types';
 import {
   type ScoreBoardItem,
   type SelectedSlipScores,
@@ -34,6 +36,7 @@ function App() {
   const [scoreStrategyFilter, setScoreStrategyFilter] = useState<ScoreStrategyFilter>('all');
   const [scoreOddsOnly, setScoreOddsOnly] = useState(true);
   const [selectedScores, setSelectedScores] = useState<SelectedSlipScores>({});
+  const [activeMatchPackId, setActiveMatchPackId] = useState<string | undefined>();
 
   const effectiveMatchPool = useMemo(
     () =>
@@ -127,6 +130,13 @@ function App() {
     return importResult;
   };
 
+  const selectMatchPack = (pack: MatchPack) => {
+    setSelectedScores({});
+    setSelectedTeam(null);
+    setActiveMatchPackId(pack.id);
+    setState(buildStateFromMatchPack(pack));
+  };
+
   const updateMatch = (match: Match) => {
     setState((current) => ({
       ...current,
@@ -199,6 +209,9 @@ function App() {
   };
 
   const resetAll = () => {
+    setSelectedScores({});
+    setSelectedTeam(null);
+    setActiveMatchPackId(undefined);
     setState(createEmptyState());
   };
 
@@ -220,6 +233,12 @@ function App() {
 
       <div className="workspace">
         <section className="left-column">
+          <MatchPackPanel
+            packs={MATCH_PACKS}
+            currentPackId={activeMatchPackId}
+            onSelectPack={selectMatchPack}
+          />
+
           <section className="panel">
             <div className="panel-heading">
               <p>录入入池</p>
