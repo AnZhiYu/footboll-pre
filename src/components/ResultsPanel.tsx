@@ -78,25 +78,28 @@ const itemMarkets = (
   matchOverrides: Record<string, MatchOverride>,
 ) => formatEnabledMarkets(item.score, item.homeName, item.awayName, resolveMarkets(item, enabledMarkets, matchOverrides));
 
-const groupScoreBoardItems = (items: ScoreBoardItem[]) => {
+const groupScoreBoardItems = (items: ScoreBoardItem[], orderedItems: ScoreBoardItem[]) => {
   const groups = new Map<string, { matchId: string; homeName: string; awayName: string; items: ScoreBoardItem[] }>();
+
+  orderedItems.forEach((item) => {
+    if (!groups.has(item.matchId)) {
+      groups.set(item.matchId, {
+        matchId: item.matchId,
+        homeName: item.homeName,
+        awayName: item.awayName,
+        items: [],
+      });
+    }
+  });
 
   items.forEach((item) => {
     const current = groups.get(item.matchId);
     if (current) {
       current.items.push(item);
-      return;
     }
-
-    groups.set(item.matchId, {
-      matchId: item.matchId,
-      homeName: item.homeName,
-      awayName: item.awayName,
-      items: [item],
-    });
   });
 
-  return Array.from(groups.values());
+  return Array.from(groups.values()).filter((group) => group.items.length > 0);
 };
 
 const formatSlipItem = (
@@ -166,7 +169,8 @@ export function ResultsPanel({
         .filter((entry): entry is { item: ScoreBoardItem; mode: SlipLegMode } => Boolean(entry)),
     [items, selectedScores],
   );
-  const groupedItems = useMemo(() => groupScoreBoardItems(visibleItems), [visibleItems]);
+  const groupedItems = useMemo(() => groupScoreBoardItems(visibleItems, items), [items, visibleItems]);
+  const groupSignature = groupedItems.map((group) => group.matchId).join('|');
   const selectedCountsByMatch = useMemo(
     () =>
       selectedItems.reduce<Record<string, number>>((counts, entry) => {
@@ -181,13 +185,20 @@ export function ResultsPanel({
   );
   const activeSlipCount = selectedItems.filter((entry) => entry.mode !== undefined).length;
   useEffect(() => {
-    if (initializedOpenMatch || groupedItems.length === 0) {
+    if (groupedItems.length === 0) {
       return;
     }
 
-    setOpenMatchIds(new Set([groupedItems[0].matchId]));
+    setOpenMatchIds((current) => {
+      const hasCurrentOpenGroup = groupedItems.some((group) => current.has(group.matchId));
+      if (initializedOpenMatch && hasCurrentOpenGroup) {
+        return current;
+      }
+
+      return new Set([groupedItems[0].matchId]);
+    });
     setInitializedOpenMatch(true);
-  }, [groupedItems, initializedOpenMatch]);
+  }, [groupSignature, groupedItems, initializedOpenMatch]);
   const copyText =
     selectedItems.length === 0
       ? '待串清单为空'
@@ -224,7 +235,7 @@ export function ResultsPanel({
   }
 
   return (
-    <section className="panel results-panel" aria-label="比分池工作台">
+    <section className="panel results-panel mobile-readonly-results" aria-label="比分池工作台">
       <div className="panel-heading">
         <div>
           <p>推荐结果</p>
@@ -335,7 +346,7 @@ export function ResultsPanel({
                         key={item.id}
                       >
                         <button
-                          className="secondary-button score-select-button"
+                          className="secondary-button score-select-button mobile-hidden-control"
                           type="button"
                           aria-pressed={selected}
                           aria-label={`选择 ${item.homeName} vs ${item.awayName} ${item.score.label}`}
@@ -373,7 +384,7 @@ export function ResultsPanel({
         })}
       </div>
 
-      <section className="slip-panel" aria-label="待串清单">
+      <section className="slip-panel mobile-hidden-control" aria-label="待串清单">
         <div className="slip-heading">
           <strong>待串清单</strong>
           <span>

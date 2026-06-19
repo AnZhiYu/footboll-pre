@@ -79,6 +79,15 @@ describe('App', () => {
     expect(within(resultsPanel).getByLabelText('2.5 大小球')).toBeInTheDocument();
   });
 
+  it('marks manual import workbench panels as desktop-only for mobile', () => {
+    render(<App />);
+
+    expect(screen.getByLabelText('手动录入工作台')).toHaveClass('desktop-workbench-panel');
+    expect(screen.getByLabelText('球队导入工作台')).toHaveClass('desktop-workbench-panel');
+    expect(screen.getByLabelText('赔率导入工作台')).toHaveClass('desktop-workbench-panel');
+    expect(screen.getByLabelText('比赛数据包工作台')).toBeInTheDocument();
+  });
+
   it('adds selected direction markets to results and copy text without changing probabilities', async () => {
     const user = userEvent.setup();
     const writeTextSpy = vi.fn().mockResolvedValue(undefined);
@@ -144,6 +153,30 @@ describe('App', () => {
     expect(screen.getByLabelText('待串清单')).toHaveTextContent('计概');
   });
 
+  it('keeps desktop score selection but marks it as mobile-hidden read-only chrome', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await addMatch(user, '英格兰', '美国');
+
+    expect(screen.getByLabelText('比分池工作台')).toHaveClass('mobile-readonly-results');
+    expect(screen.getAllByRole('button', { name: /选择 英格兰 vs 美国/ })[0]).toHaveClass('mobile-hidden-control');
+    expect(screen.getByLabelText('待串清单')).toHaveClass('mobile-hidden-control');
+    expect(screen.getByLabelText('手机端选择状态')).toHaveClass('mobile-hidden-control');
+  });
+
+  it('marks match pool select and delete controls as mobile-hidden and keeps a readable detail toggle', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await addMatch(user, '英格兰', '美国');
+
+    expect(screen.getByLabelText('选择 英格兰 vs 美国').closest('.match-check')).toHaveClass('mobile-hidden-control');
+    expect(screen.getByRole('button', { name: '删除 英格兰 vs 美国' })).toHaveClass('mobile-hidden-control');
+    expect(screen.getByRole('button', { name: '展开赛事 英格兰 vs 美国' })).toHaveClass('match-detail-toggle');
+    expect(screen.getByRole('button', { name: '展开赛事 英格兰 vs 美国' })).toHaveTextContent('详情');
+  });
+
   it('switches a selected slip leg between score and winner pricing', async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -185,6 +218,20 @@ describe('App', () => {
 
     expect(within(brazilGroup).getByRole('button', { name: /收起 巴西 vs 墨西哥/ })).toBeInTheDocument();
     expect(within(brazilGroup).getAllByLabelText(/巴西 vs 墨西哥 .* 比分选项/).length).toBeGreaterThan(0);
+  });
+
+  it('opens the first score group again after switching match packs', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(<App />);
+
+    await user.selectOptions(screen.getByLabelText('选择比赛数据包'), '2026-06-18');
+    expect(screen.getByRole('button', { name: /收起 捷克 vs 南非/ })).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('选择比赛数据包'), '2026-06-19');
+
+    expect(screen.getByRole('button', { name: /收起 美国 vs 澳大利亚/ })).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/美国 vs 澳大利亚 .* 比分选项/).length).toBeGreaterThan(0);
   });
 
   it('keeps score-board strategy filters in the recommended order', async () => {
@@ -622,7 +669,7 @@ describe('App', () => {
 
     expect(screen.queryByText(/大组合/)).not.toBeInTheDocument();
     const czechGroup = screen.getByLabelText('捷克 vs 南非 比分组');
-    await user.click(within(czechGroup).getByRole('button', { name: /展开 捷克 vs 南非/ }));
+    expect(within(czechGroup).getByRole('button', { name: /收起 捷克 vs 南非/ })).toBeInTheDocument();
     expect(czechGroup).toHaveTextContent('赔 6.60');
 
     await user.click(screen.getByRole('button', { name: '赔率' }));
@@ -646,7 +693,7 @@ describe('App', () => {
     expect(metricRegion).toHaveTextContent('Top1');
     expect(document.querySelector('.match-verdict')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: '展开赛事' }));
+    await user.click(screen.getByRole('button', { name: '展开赛事 英格兰 vs 克罗地亚' }));
     expect(screen.getByLabelText('球队A进攻')).toBeInTheDocument();
     expect(screen.getByLabelText('球队A节奏')).toBeInTheDocument();
     expect(document.querySelector('.analysis-strip')).not.toBeInTheDocument();

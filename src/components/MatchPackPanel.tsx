@@ -26,7 +26,7 @@ export function MatchPackPanel({ packs, currentPackId, onSelectPack }: MatchPack
   };
 
   return (
-    <section className="panel match-pack-panel">
+    <section className="panel match-pack-panel" aria-label="比赛数据包工作台">
       <div className="panel-heading">
         <div>
           <p>比赛数据包</p>

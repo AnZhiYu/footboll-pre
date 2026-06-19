@@ -239,7 +239,7 @@ function App() {
             onSelectPack={selectMatchPack}
           />
 
-          <section className="panel">
+          <section className="panel desktop-workbench-panel" aria-label="手动录入工作台">
             <div className="panel-heading">
               <p>录入入池</p>
               <strong>{state.matchPool.length} 场</strong>
@@ -247,18 +247,22 @@ function App() {
             <MatchForm onAddMatch={addMatch} selectedTeam={selectedTeam} />
           </section>
 
-          <TeamImportPanel
-            teams={state.teamPool}
-            onImportTeams={importTeams}
-            onImportMatches={importMatches}
-            onUseTeam={(team) => setSelectedTeam(team)}
-          />
+          <div className="desktop-workbench-panel" aria-label="球队导入工作台">
+            <TeamImportPanel
+              teams={state.teamPool}
+              onImportTeams={importTeams}
+              onImportMatches={importMatches}
+              onUseTeam={(team) => setSelectedTeam(team)}
+            />
+          </div>
 
-          <OddsImportPanel
-            onImportOdds={importOdds}
-            useOddsData={state.uiState.useOddsData}
-            onToggleUseOddsData={toggleUseOddsData}
-          />
+          <div className="desktop-workbench-panel" aria-label="赔率导入工作台">
+            <OddsImportPanel
+              onImportOdds={importOdds}
+              useOddsData={state.uiState.useOddsData}
+              onToggleUseOddsData={toggleUseOddsData}
+            />
+          </div>
 
           <section className="match-pool">
             <div className="match-pool-heading">
@@ -321,7 +325,7 @@ function App() {
         </aside>
       </div>
 
-      <div className="mobile-action-bar">
+      <div className="mobile-action-bar mobile-hidden-control" aria-label="手机端选择状态">
         <span>{selectedAnalyses.length} 场已选</span>
         <strong>{selectedAnalyses.length > 0 ? '比分池' : '待选择'}</strong>
       </div>

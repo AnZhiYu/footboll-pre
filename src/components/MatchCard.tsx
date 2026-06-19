@@ -97,7 +97,7 @@ export function MatchCard({
   return (
     <article className="match-card">
       <div className="match-card-main">
-        <label className="match-check">
+        <label className="match-check mobile-hidden-control">
           <input
             type="checkbox"
             checked={selected}
@@ -204,7 +204,7 @@ export function MatchCard({
           </div>
         </div>
         <button
-          className="icon-button danger"
+          className="icon-button danger mobile-hidden-control"
           type="button"
           aria-label={`删除 ${title}`}
           onClick={() => onDeleteMatch(match.id)}
@@ -212,12 +212,13 @@ export function MatchCard({
           <Trash2 size={18} />
         </button>
         <button
-          className="icon-button"
+          className="icon-button match-detail-toggle"
           type="button"
-          aria-label={expanded ? '收起赛事' : '展开赛事'}
+          aria-label={`${expanded ? '收起赛事' : '展开赛事'} ${title}`}
           onClick={() => setExpanded((value) => !value)}
         >
           {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          <span>{expanded ? '收起' : '详情'}</span>
         </button>
       </div>
 
