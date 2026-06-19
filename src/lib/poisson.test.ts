@@ -7,6 +7,7 @@ import {
   getPaceFactor,
   NIL_NIL_TOURNAMENT_DISCOUNT,
   ONE_NIL_TOURNAMENT_DISCOUNT,
+  closeHighScoreDiscount,
 } from './poisson';
 
 const makeMatch = (overrides: Partial<Match> = {}): Match => ({
@@ -99,5 +100,15 @@ describe('poisson engine', () => {
     expect(oneNil?.probability).toBeCloseTo(rawOneGoalProbability * ONE_NIL_TOURNAMENT_DISCOUNT, 8);
     expect(nilOne?.probability).toBeCloseTo(rawOneGoalProbability * ONE_NIL_TOURNAMENT_DISCOUNT, 8);
     expect(adjustedTotal).toBeCloseTo(1, 3);
+  });
+
+  it('discounts close high-scoring scorelines without penalizing common lopsided big scores', () => {
+    expect(closeHighScoreDiscount({ homeGoals: 3, awayGoals: 2 })).toBeLessThan(1);
+    expect(closeHighScoreDiscount({ homeGoals: 2, awayGoals: 3 })).toBeLessThan(1);
+    expect(closeHighScoreDiscount({ homeGoals: 3, awayGoals: 3 })).toBeLessThan(1);
+    expect(closeHighScoreDiscount({ homeGoals: 4, awayGoals: 3 })).toBeLessThan(1);
+    expect(closeHighScoreDiscount({ homeGoals: 3, awayGoals: 1 })).toBe(1);
+    expect(closeHighScoreDiscount({ homeGoals: 4, awayGoals: 1 })).toBe(1);
+    expect(closeHighScoreDiscount({ homeGoals: 4, awayGoals: 2 })).toBe(1);
   });
 });

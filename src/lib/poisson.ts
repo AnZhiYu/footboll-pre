@@ -5,6 +5,12 @@ export const BASE_GOAL = 1.2;
 export const MAX_GOALS = 10;
 export const NIL_NIL_TOURNAMENT_DISCOUNT = 0.5;
 export const ONE_NIL_TOURNAMENT_DISCOUNT = 0.8;
+export const CLOSE_HIGH_SCORE_DISCOUNTS = {
+  threeTwo: 0.9,
+  threeThree: 0.8,
+  fourThree: 0.7,
+  fourFourPlus: 0.6,
+} as const;
 export const FACTORIALS = [1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800] as const;
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
@@ -45,6 +51,30 @@ export const calculateExpectedGoals = (match: Match) => {
 const poissonProbability = (lambda: number, goals: number) =>
   (lambda ** goals * Math.exp(-lambda)) / FACTORIALS[goals];
 
+export const closeHighScoreDiscount = (pick: Pick<ScorePick, 'homeGoals' | 'awayGoals'>) => {
+  const totalGoals = pick.homeGoals + pick.awayGoals;
+  const goalDifference = Math.abs(pick.homeGoals - pick.awayGoals);
+  const maxGoals = Math.max(pick.homeGoals, pick.awayGoals);
+
+  if (totalGoals === 5 && goalDifference === 1) {
+    return CLOSE_HIGH_SCORE_DISCOUNTS.threeTwo;
+  }
+
+  if (totalGoals === 6 && goalDifference === 0) {
+    return CLOSE_HIGH_SCORE_DISCOUNTS.threeThree;
+  }
+
+  if (totalGoals === 7 && goalDifference === 1) {
+    return CLOSE_HIGH_SCORE_DISCOUNTS.fourThree;
+  }
+
+  if (totalGoals >= 8 && goalDifference <= 1 && maxGoals >= 4) {
+    return CLOSE_HIGH_SCORE_DISCOUNTS.fourFourPlus;
+  }
+
+  return 1;
+};
+
 const getLowEventScoreDiscount = (pick: ScorePick) => {
   if (pick.homeGoals === 0 && pick.awayGoals === 0) {
     return NIL_NIL_TOURNAMENT_DISCOUNT;
@@ -57,7 +87,7 @@ const getLowEventScoreDiscount = (pick: ScorePick) => {
     return ONE_NIL_TOURNAMENT_DISCOUNT;
   }
 
-  return 1;
+  return closeHighScoreDiscount(pick);
 };
 
 export const createScoreMatrix = (homeLambda: number, awayLambda: number): ScorePick[] => {
