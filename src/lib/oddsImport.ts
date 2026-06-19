@@ -1,4 +1,4 @@
-import type { CorrectScoreOdd, Match, MatchOdds, OutcomeOdds } from '../types';
+import type { CorrectScoreOdd, Match, MatchOdds, OutcomeOdds, TotalGoalsOdds } from '../types';
 
 export type OddsImportItem = {
   teamA: string;
@@ -83,6 +83,39 @@ const parseCorrectScores = (value: unknown): CorrectScoreOdd[] => {
   });
 };
 
+const parseTotalGoals = (value: unknown): TotalGoalsOdds[] => {
+  if (value === undefined || value === null) {
+    return [];
+  }
+
+  if (!Array.isArray(value)) {
+    throw new Error('totalGoals 需要是数组');
+  }
+
+  return value.map((item) => {
+    if (!item || typeof item !== 'object') {
+      throw new Error('每个总进球数赔率都需要 goals 和 odds');
+    }
+
+    const totalGoalsOdd = item as Record<string, unknown>;
+    const goals = totalGoalsOdd.goals;
+    const validGoals =
+      goals === '7+' || (typeof goals === 'number' && Number.isInteger(goals) && goals >= 0 && goals <= 6);
+    if (!validGoals) {
+      throw new Error('goals 需要是 0-6 或 7+');
+    }
+    if (!isPositiveOdds(totalGoalsOdd.odds)) {
+      throw new Error('总进球数 odds 必须大于 1');
+    }
+
+    return {
+      goals,
+      odds: totalGoalsOdd.odds,
+      status: totalGoalsOdd.status === 'closed' ? 'closed' : 'open',
+    };
+  });
+};
+
 export const parseOddsImports = (rawValue: string): ParseOddsImportsResult => {
   try {
     const parsed = JSON.parse(stripTrailingCommas(rawValue)) as unknown;
@@ -115,6 +148,7 @@ export const parseOddsImports = (rawValue: string): ParseOddsImportsResult => {
           source: 'imported' as const,
           winner: parseWinner(odds.winner),
           correctScores: parseCorrectScores(odds.correctScores),
+          totalGoals: parseTotalGoals(odds.totalGoals),
         },
       };
     });
@@ -143,6 +177,7 @@ const reverseOdds = (odds: MatchOdds): MatchOdds => ({
     ...item,
     score: reverseScore(item.score),
   })),
+  totalGoals: odds.totalGoals?.map((item) => ({ ...item })),
 });
 
 export const applyOddsImports = (matches: Match[], imports: OddsImportItem[]): ApplyOddsImportsResult => {

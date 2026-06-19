@@ -16,7 +16,7 @@ export const STRATEGY_LABELS: Record<BaseComboStrategy, string> = {
   underdog: '冷门防守串',
   goals: '备选串',
   highScore: '大比分串',
-  mainline: '主线串',
+  mainline: '主推串',
   coverage: '备选串',
   upset: '冷门防守串',
   value: '赔率价值串',

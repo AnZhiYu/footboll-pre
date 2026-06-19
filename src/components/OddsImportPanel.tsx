@@ -1,6 +1,7 @@
-import { Clipboard, Database, Upload } from 'lucide-react';
+import { Clipboard, Database, RefreshCw, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { parseOddsImports } from '../lib/oddsImport';
+import { fetchSportteryOdds } from '../lib/sporttery';
 import type { OddsImportItem } from '../lib/oddsImport';
 
 const TEMPLATE = `[
@@ -12,6 +13,10 @@ const TEMPLATE = `[
       "correctScores": [
         { "score": "1-0", "odds": 6.60 },
         { "score": "1-1", "odds": 7.00 }
+      ],
+      "totalGoals": [
+        { "goals": 2, "odds": 3.40 },
+        { "goals": "7+", "odds": 60.00 }
       ]
     }
   },
@@ -35,6 +40,7 @@ export function OddsImportPanel({ onImportOdds, useOddsData, onToggleUseOddsData
   const [open, setOpen] = useState(false);
   const [rawValue, setRawValue] = useState(TEMPLATE);
   const [message, setMessage] = useState('');
+  const [fetchingSporttery, setFetchingSporttery] = useState(false);
 
   const importOdds = () => {
     const parsed = parseOddsImports(rawValue);
@@ -48,6 +54,27 @@ export function OddsImportPanel({ onImportOdds, useOddsData, onToggleUseOddsData
       result.unmatched.length > 0 ? `；未匹配 ${result.unmatched.length} 场：${result.unmatched.join('、')}` : '';
     setMessage(`已匹配 ${result.matchedCount} 场赔率${unmatchedText}`);
     setOpen(false);
+  };
+
+  const importSportteryOdds = async () => {
+    setFetchingSporttery(true);
+    setMessage('正在拉取竞彩胜平负、波胆、总进球数赔率...');
+    try {
+      const imports = await fetchSportteryOdds();
+      const result = onImportOdds(imports);
+      const unmatchedText =
+        result.unmatched.length > 0 ? `；未匹配 ${result.unmatched.length} 场：${result.unmatched.join('、')}` : '';
+      setRawValue(JSON.stringify(imports, null, 2));
+      setMessage(`竞彩接口已拉取 ${imports.length} 场，已匹配 ${result.matchedCount} 场赔率${unmatchedText}`);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? `${error.message}。可能被接口风控或网络拦截，请改用手动赔率导入。`
+          : '竞彩接口拉取失败，请改用手动赔率导入。',
+      );
+    } finally {
+      setFetchingSporttery(false);
+    }
   };
 
   return (
@@ -70,6 +97,15 @@ export function OddsImportPanel({ onImportOdds, useOddsData, onToggleUseOddsData
           <button className="secondary-button" type="button" onClick={() => setOpen((value) => !value)}>
             <Upload size={17} />
             导入赔率数据
+          </button>
+          <button
+            className="secondary-button"
+            type="button"
+            disabled={fetchingSporttery}
+            onClick={importSportteryOdds}
+          >
+            <RefreshCw size={17} />
+            {fetchingSporttery ? '拉取中' : '拉取竞彩赔率'}
           </button>
         </div>
       </div>

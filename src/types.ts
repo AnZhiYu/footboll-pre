@@ -28,11 +28,18 @@ export type CorrectScoreOdd = {
   status?: 'open' | 'closed';
 };
 
+export type TotalGoalsOdds = {
+  goals: number | '7+';
+  odds: number;
+  status?: 'open' | 'closed';
+};
+
 export type MatchOdds = {
   source?: OddsSource;
   updatedAt?: string;
   winner?: OutcomeOdds;
   correctScores?: CorrectScoreOdd[];
+  totalGoals?: TotalGoalsOdds[];
 };
 
 export type TeamProfile = TeamStats & {

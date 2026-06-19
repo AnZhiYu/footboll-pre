@@ -1,4 +1,4 @@
-import type { BaseComboStrategy, MatchAnalysis, OutcomeOdds, ProbabilityTriplet, ScorePick } from '../types';
+import type { BaseComboStrategy, MatchAnalysis, OutcomeOdds, ProbabilityTriplet, ScorePick, TotalGoalsOdds } from '../types';
 import { getScoreLayers, getStrategyCandidates } from './combo';
 
 export type ScoreSortKey = 'probability' | 'odds' | 'market' | 'value';
@@ -14,7 +14,7 @@ export type ScoreBoardItem = {
   strategyLabels: string[];
 };
 
-export type SlipLegMode = 'score' | 'winner' | undefined;
+export type SlipLegMode = 'score' | 'winner' | 'totalGoals' | undefined;
 
 export type SelectedSlipScore = {
   mode: SlipLegMode;
@@ -25,7 +25,9 @@ export type SelectedSlipScores = Record<string, SelectedSlipScore>;
 export type SlipMatchSummary = {
   matchId: string;
   winnerOdds?: OutcomeOdds;
+  totalGoalsOdds?: TotalGoalsOdds[];
   modelWinnerProbabilities: ProbabilityTriplet;
+  modelTotalGoalsProbabilities: Partial<Record<TotalGoalsOdds['goals'], number>>;
 };
 
 export type SlipCalculationInput = {
@@ -40,7 +42,7 @@ type ScoreBoardOptions = {
 };
 
 const STRATEGY_LABELS: Record<Exclude<ScoreStrategyFilter, 'all'>, string> = {
-  mainline: '主线',
+  mainline: '主推',
   coverage: '备选',
   highScore: '大比分',
   upset: '冷门防守',
@@ -117,6 +119,11 @@ const getScoreWinnerKey = (score: ScorePick): keyof ProbabilityTriplet => {
   return 'draw';
 };
 
+const getScoreTotalGoalsKey = (score: ScorePick): TotalGoalsOdds['goals'] => {
+  const totalGoals = score.homeGoals + score.awayGoals;
+  return totalGoals >= 7 ? '7+' : totalGoals;
+};
+
 export const calculateModelWinnerProbabilities = (scores: ScorePick[]): ProbabilityTriplet =>
   scores.reduce(
     (totals, score) => {
@@ -125,6 +132,15 @@ export const calculateModelWinnerProbabilities = (scores: ScorePick[]): Probabil
     },
     { teamAWin: 0, draw: 0, teamBWin: 0 },
   );
+
+export const calculateModelTotalGoalsProbabilities = (
+  scores: ScorePick[],
+): Partial<Record<TotalGoalsOdds['goals'], number>> =>
+  scores.reduce<Partial<Record<TotalGoalsOdds['goals'], number>>>((totals, score) => {
+    const key = getScoreTotalGoalsKey(score);
+    totals[key] = (totals[key] ?? 0) + score.probability;
+    return totals;
+  }, {});
 
 const getPositiveNumber = (value: number | undefined) =>
   typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
@@ -142,6 +158,15 @@ export const getSlipLegMetrics = (
     const probability = getPositiveNumber(item.score.probability) ?? 0;
     const odds = getPositiveNumber(item.score.odds) ?? (probability > 0 ? 1 / probability : undefined);
     return { probability, odds, estimated: item.score.odds === undefined };
+  }
+
+  if (mode === 'totalGoals') {
+    const summary = summaries.find((candidate) => candidate.matchId === item.matchId);
+    const totalGoalsKey = getScoreTotalGoalsKey(item.score);
+    const totalGoalsOdd = summary?.totalGoalsOdds?.find((odd) => odd.goals === totalGoalsKey);
+    const probability = getPositiveNumber(summary?.modelTotalGoalsProbabilities[totalGoalsKey]) ?? 0;
+    const odds = getPositiveNumber(totalGoalsOdd?.odds) ?? (probability > 0 ? 1 / probability : undefined);
+    return { probability, odds, estimated: totalGoalsOdd?.odds === undefined };
   }
 
   const summary = summaries.find((candidate) => candidate.matchId === item.matchId);

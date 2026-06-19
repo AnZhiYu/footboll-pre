@@ -42,7 +42,7 @@ const sortOptions: Array<{ key: ScoreSortKey; label: string; requiresOdds?: bool
 ];
 
 const strategyOptions: Array<{ key: ScoreStrategyFilter; label: string }> = [
-  { key: 'mainline', label: '主线' },
+  { key: 'mainline', label: '主推' },
   { key: 'coverage', label: '备选' },
   { key: 'highScore', label: '大比分' },
   { key: 'upset', label: '冷门防守' },
@@ -61,6 +61,10 @@ const formatModeLabel = (mode: SlipLegMode) => {
 
   if (mode === 'score') {
     return '比分';
+  }
+
+  if (mode === 'totalGoals') {
+    return '进球数';
   }
 
   return '不计入';
@@ -145,6 +149,7 @@ export function ResultsPanel({
   onSlipLegModeChange,
 }: ResultsPanelProps) {
   const [copied, setCopied] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [openMatchIds, setOpenMatchIds] = useState<Set<string>>(new Set());
   const [initializedOpenMatch, setInitializedOpenMatch] = useState(false);
   const hasOdds = items.some((item) => Boolean(item.score.odds));
@@ -249,6 +254,10 @@ export function ResultsPanel({
           </strong>
         </div>
         <div className="results-heading-actions">
+          <button className="secondary-button" type="button" onClick={() => setCollapsed((value) => !value)}>
+            {collapsed ? <ChevronRight size={17} /> : <ChevronDown size={17} />}
+            {collapsed ? '展开推荐结果' : '收起推荐结果'}
+          </button>
           <button className="secondary-button back-to-top-button" type="button" onClick={scrollToTop}>
             <ArrowUp size={17} />
             返回顶部
@@ -259,6 +268,11 @@ export function ResultsPanel({
           </button>
         </div>
       </div>
+
+      {collapsed ? (
+        <p className="hint">推荐结果已收起。</p>
+      ) : (
+        <>
 
       <div className="score-board-toolbar">
         <div className="control-group">
@@ -435,6 +449,13 @@ export function ResultsPanel({
                     >
                       胜平负
                     </button>
+                    <button
+                      type="button"
+                      aria-pressed={mode === 'totalGoals'}
+                      onClick={() => onSlipLegModeChange(item.id, 'totalGoals')}
+                    >
+                      进球数
+                    </button>
                   </div>
                   <div className="slip-metrics">
                     <span>模型 {formatProbability(item.score.probability)}</span>
@@ -465,6 +486,8 @@ export function ResultsPanel({
       </section>
 
       <p className="risk-note">结果仅供概率参考和组合整理，不构成投注建议，也不承诺命中。</p>
+        </>
+      )}
     </section>
   );
 }

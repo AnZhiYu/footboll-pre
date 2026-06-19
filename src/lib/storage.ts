@@ -8,6 +8,7 @@ import type {
   MatchOdds,
   MatchOverride,
   OutcomeOdds,
+  TotalGoalsOdds,
   TeamProfile,
   TeamStats,
   UiState,
@@ -96,6 +97,23 @@ const isCorrectScoreOdd = (value: unknown): value is CorrectScoreOdd => {
   );
 };
 
+const isTotalGoalsOdd = (value: unknown): value is TotalGoalsOdds => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const odd = value as Record<string, unknown>;
+  const validGoals =
+    odd.goals === '7+' ||
+    (typeof odd.goals === 'number' && Number.isInteger(odd.goals) && odd.goals >= 0 && odd.goals <= 6);
+
+  return (
+    validGoals &&
+    isPositiveOdds(odd.odds) &&
+    (odd.status === undefined || odd.status === 'open' || odd.status === 'closed')
+  );
+};
+
 const isMatchOdds = (value: unknown): value is MatchOdds => {
   if (!value || typeof value !== 'object') {
     return false;
@@ -105,7 +123,9 @@ const isMatchOdds = (value: unknown): value is MatchOdds => {
   return (
     (odds.winner === undefined || isOutcomeOdds(odds.winner)) &&
     (odds.correctScores === undefined ||
-      (Array.isArray(odds.correctScores) && odds.correctScores.every(isCorrectScoreOdd)))
+      (Array.isArray(odds.correctScores) && odds.correctScores.every(isCorrectScoreOdd))) &&
+    (odds.totalGoals === undefined ||
+      (Array.isArray(odds.totalGoals) && odds.totalGoals.every(isTotalGoalsOdd)))
   );
 };
 
@@ -119,6 +139,7 @@ const normalizeOdds = (odds: MatchOdds | undefined): MatchOdds | undefined => {
     updatedAt: odds.updatedAt,
     winner: odds.winner,
     correctScores: odds.correctScores?.map((item) => ({ ...item })),
+    totalGoals: odds.totalGoals?.map((item) => ({ ...item })),
   };
 };
 

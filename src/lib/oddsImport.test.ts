@@ -28,7 +28,11 @@ describe('odds import', () => {
           "teamB": "南非",
           "odds": {
             "winner": null,
-            "correctScores": []
+            "correctScores": [],
+            "totalGoals": [
+              { "goals": 2, "odds": 3.40 },
+              { "goals": "7+", "odds": 60.00 }
+            ]
           }
         }
       ]`),
@@ -42,6 +46,10 @@ describe('odds import', () => {
             source: 'imported',
             winner: undefined,
             correctScores: [],
+            totalGoals: [
+              { goals: 2, odds: 3.4, status: 'open' },
+              { goals: '7+', odds: 60, status: 'open' },
+            ],
           },
         },
       ],
@@ -72,7 +80,8 @@ describe('odds import', () => {
           "correctScores": [
             { "score": "0-1", "odds": 6.6 },
             { "score": "1-1", "odds": 7.0 }
-          ]
+          ],
+          "totalGoals": [{ "goals": 1, "odds": 4.2 }]
         }
       },
       {
@@ -95,6 +104,7 @@ describe('odds import', () => {
         { score: '1-0', odds: 6.6, status: 'open' },
         { score: '1-1', odds: 7, status: 'open' },
       ],
+      totalGoals: [{ goals: 1, odds: 4.2, status: 'open' }],
     });
   });
 });

@@ -22,6 +22,7 @@ import {
   type ScoreSortKey,
   type ScoreStrategyFilter,
   buildScoreBoardItems,
+  calculateModelTotalGoalsProbabilities,
   calculateModelWinnerProbabilities,
   toggleSelectedScore,
   updateSelectedScoreMode,
@@ -44,7 +45,7 @@ const getHashRoute = () => (window.location.hash === '#/guide' ? 'guide' : 'app'
 
 const HISTORICAL_STRATEGY_BACKTEST = [
   {
-    name: '主线',
+    name: '主推',
     rule: '每场模型 Top2',
     hit: '6/26',
     rate: '23.1%',
@@ -73,11 +74,11 @@ const HISTORICAL_STRATEGY_BACKTEST = [
     hit: '8/26',
     rate: '30.8%',
     coverage: '33.3%',
-    usage: '用于防平、防小冷和主线之外的破坏性比分',
+    usage: '用于防平、防小冷和主推之外的破坏性比分',
   },
   {
     name: '混合',
-    rule: '主线 + 备选 + 冷门防守',
+    rule: '主推 + 备选 + 冷门防守',
     hit: '15/26',
     rate: '57.7%',
     coverage: '61.3%',
@@ -145,8 +146,8 @@ function GuidePage() {
 
         <article className="guide-section">
           <h2>策略说明</h2>
-          <p>主线代表模型概率较高的常规比分；备选比分用于覆盖 Top 区间附近的相邻结果；大比分聚焦总进球偏高的开放局；冷门防守用于保留低概率但可能破坏主线的比分；赔率价值表示模型概率相对盘口隐含概率更有优势的选项。</p>
-          <p>大池子不建议直接全场次精准比分连串，更适合先看每场的主线、备选、大比分和冷门防守，再挑 2-5 场组合。</p>
+          <p>主推代表模型概率较高的常规比分；备选比分用于覆盖 Top 区间附近的相邻结果；大比分聚焦总进球偏高的开放局；冷门防守用于保留低概率但可能破坏主推的比分；赔率价值表示模型概率相对盘口隐含概率更有优势的选项。</p>
+          <p>大池子不建议直接全场次精准比分连串，更适合先看每场的主推、备选、大比分和冷门防守，再挑 2-5 场组合。</p>
         </article>
 
         <article className="guide-section">
@@ -158,7 +159,7 @@ function GuidePage() {
         <article className="guide-section">
           <h2>盘口赔率对比</h2>
           <p>导入赔率后，系统会把波胆赔率转换成盘口隐含概率，并与模型概率对比。价值不是命中承诺，而是用于发现“模型认为概率高于盘口定价”的候选项。</p>
-          <p>赔率越低通常代表市场越看好，但不等于一定稳；球队能力用于判断真实比赛风格，赔率用于观察市场定价，两者结合能更好地区分主线、覆盖和防冷。</p>
+          <p>赔率越低通常代表市场越看好，但不等于一定稳；球队能力用于判断真实比赛风格，赔率用于观察市场定价，两者结合能更好地区分主推、覆盖和防冷。</p>
         </article>
 
         <article className="guide-section guide-backtest-section">
@@ -272,7 +273,9 @@ function App() {
         return {
           matchId: analysis.matchId,
           winnerOdds: match?.odds?.winner,
+          totalGoalsOdds: match?.odds?.totalGoals,
           modelWinnerProbabilities: calculateModelWinnerProbabilities(analysis.matrix),
+          modelTotalGoalsProbabilities: calculateModelTotalGoalsProbabilities(analysis.matrix),
         };
       }),
     [effectiveMatchPool, selectedAnalyses],
@@ -455,7 +458,7 @@ function App() {
         </div>
       </header>
 
-      <div className="workspace">
+      <div className="workspace single-column-workspace" aria-label="预测工具工作台">
         <section className="left-column">
           <MatchPackPanel
             packs={MATCH_PACKS}
@@ -526,9 +529,7 @@ function App() {
               })
             )}
           </section>
-        </section>
-
-        <aside className="right-column">
+          <section className="results-section">
           <ResultsPanel
             items={scoreBoardItems}
             selectedCount={selectedAnalyses.length}
@@ -546,7 +547,8 @@ function App() {
             onSelectScore={selectScore}
             onSlipLegModeChange={updateSlipLegMode}
           />
-        </aside>
+          </section>
+        </section>
       </div>
 
       <div className="mobile-action-bar mobile-hidden-control" aria-label="手机端选择状态">

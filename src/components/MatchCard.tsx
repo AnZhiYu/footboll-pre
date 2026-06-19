@@ -1,12 +1,11 @@
-import { BadgeDollarSign, ChevronDown, ChevronUp, Copy, Trash2 } from 'lucide-react';
+import { BadgeDollarSign, Copy, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import type { Match, MatchAnalysis, ProbabilityTriplet, ScorePick, TeamStats } from '../types';
+import type { Match, MatchAnalysis, ProbabilityTriplet, ScorePick } from '../types';
 import { getBigScoreSignal } from '../lib/bigScore';
 import { formatProbability, getScoreLayers } from '../lib/combo';
 import { getConfidenceInsight, getPaceInsight, getXgInsight } from '../lib/insights';
 import { getMidOddsCandidateInsight } from '../lib/odds';
 import { OddsDetailModal } from './OddsDetailModal';
-import { StatControl } from './StatControl';
 
 type MatchCardProps = {
   match: Match;
@@ -16,16 +15,6 @@ type MatchCardProps = {
   onUpdateMatch: (match: Match) => void;
   onDeleteMatch: (matchId: string) => void;
 };
-
-const statLabels: Array<[keyof TeamStats, string]> = [
-  ['attack', '进攻'],
-  ['defense', '防守'],
-  ['stability', '稳定'],
-  ['pace', '节奏'],
-];
-
-const formatOdds = (value: number | undefined) => (value ? value.toFixed(2) : '无赔率');
-const formatValue = (value: number | undefined) => (value ? value.toFixed(2) : '-');
 
 const leadingOutcome = (probabilities: ProbabilityTriplet, homeName: string, awayName: string) => {
   const entries = [
@@ -40,9 +29,6 @@ function ScorePickChip({ pick }: { pick: ScorePick }) {
   return (
     <span className="score-pick-chip" title={`${pick.label} 模型概率 ${formatProbability(pick.probability)}`}>
       <strong>{pick.label}</strong>
-      <small>模型 {formatProbability(pick.probability)}</small>
-      <small>{pick.odds ? `赔 ${formatOdds(pick.odds)}` : '无赔率'}</small>
-      <small>价值 {formatValue(pick.valueIndex)}</small>
     </span>
   );
 }
@@ -52,10 +38,8 @@ export function MatchCard({
   analysis,
   selected,
   onToggleSelected,
-  onUpdateMatch,
   onDeleteMatch,
 }: MatchCardProps) {
-  const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const title = `${match.homeName} vs ${match.awayName}`;
   const homeXg = getXgInsight(analysis.homeLambda);
@@ -80,20 +64,6 @@ export function MatchCard({
     window.setTimeout(() => setCopied(false), 1200);
   };
 
-  const updateStats = (side: 'homeStats' | 'awayStats', field: keyof TeamStats, value: number) => {
-    onUpdateMatch({
-      ...match,
-      [side]: {
-        ...match[side],
-        [field]: value,
-      },
-    });
-  };
-
-  const updateName = (field: 'homeName' | 'awayName', value: string) => {
-    onUpdateMatch({ ...match, [field]: value });
-  };
-
   return (
     <article className="match-card">
       <div className="match-card-main">
@@ -106,28 +76,31 @@ export function MatchCard({
           />
         </label>
         <div className="match-summary">
-          <button
-            className="match-title-button"
-            type="button"
-            aria-label={`复制对局 ${title}`}
-            title="点击复制对局"
-            onClick={copyTitle}
-          >
-            <span className="match-title">{title}</span>
-            <Copy size={15} />
-            {copied ? <span className="copied-badge">已复制</span> : null}
-          </button>
-          {match.odds ? (
+          <div className="match-title-row">
             <button
-              className="odds-detail-button"
+              className="match-title-button"
               type="button"
-              aria-label={`查看赔率详情 ${title}`}
-              title="查看赔率详情"
-              onClick={() => setOddsOpen(true)}
+              aria-label={`复制对局 ${title}`}
+              title="点击复制对局"
+              onClick={copyTitle}
             >
-              <BadgeDollarSign size={15} />
+              <span className="match-title">{title}</span>
+              <Copy size={15} />
+              {copied ? <span className="copied-badge">已复制</span> : null}
             </button>
-          ) : null}
+            {match.odds ? (
+              <button
+                className="secondary-button odds-detail-button"
+                type="button"
+                aria-label={`赔率详情 ${title}`}
+                title="查看赔率详情"
+                onClick={() => setOddsOpen(true)}
+              >
+                <BadgeDollarSign size={14} />
+                赔率详情
+              </button>
+            ) : null}
+          </div>
           {winnerSummary && winnerModelLead && winnerMarketLead ? (
             <div className="winner-value-strip" aria-label={`${title} 胜平负价值`}>
               <strong>胜平负价值</strong>
@@ -158,16 +131,12 @@ export function MatchCard({
           ) : null}
           <div className="score-layer-grid" aria-label={`${title} 比分分层推荐`}>
             <section>
-              <h3>主线</h3>
-              <div>{scoreLayers.mainline.map((pick) => <ScorePickChip key={pick.label} pick={pick} />)}</div>
-            </section>
-            <section>
-              <h3>备选比分</h3>
-              <div>{scoreLayers.coverage.map((pick) => <ScorePickChip key={pick.label} pick={pick} />)}</div>
+              <h3>主推</h3>
+              <div>{analysis.matrix.slice(0, 3).map((pick) => <ScorePickChip key={pick.label} pick={pick} />)}</div>
             </section>
             <section>
               <h3>冷门防守</h3>
-              <div>{scoreLayers.upset.map((pick) => <ScorePickChip key={pick.label} pick={pick} />)}</div>
+              <div>{scoreLayers.upset.slice(0, 3).map((pick) => <ScorePickChip key={pick.label} pick={pick} />)}</div>
             </section>
           </div>
           <div
@@ -211,59 +180,7 @@ export function MatchCard({
         >
           <Trash2 size={18} />
         </button>
-        <button
-          className="icon-button match-detail-toggle"
-          type="button"
-          aria-label={`${expanded ? '收起赛事' : '展开赛事'} ${title}`}
-          onClick={() => setExpanded((value) => !value)}
-        >
-          {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          <span>{expanded ? '收起' : '详情'}</span>
-        </button>
       </div>
-
-      {expanded ? (
-        <div className="match-editor">
-          <div className="name-row">
-            <label>
-              球队A
-              <input value={match.homeName} onChange={(event) => updateName('homeName', event.target.value)} />
-            </label>
-            <label>
-              球队B
-              <input value={match.awayName} onChange={(event) => updateName('awayName', event.target.value)} />
-            </label>
-          </div>
-
-          <div className="stats-columns">
-            <section>
-              <h3>{match.homeName || '球队A'}能力</h3>
-              {statLabels.map(([field, label]) => (
-                <StatControl
-                  key={`home-${field}`}
-                  label={`球队A${label}`}
-                  field={field}
-                  value={match.homeStats[field] ?? 50}
-                  onChange={(nextField, value) => updateStats('homeStats', nextField, value)}
-                />
-              ))}
-            </section>
-            <section>
-              <h3>{match.awayName || '球队B'}能力</h3>
-              {statLabels.map(([field, label]) => (
-                <StatControl
-                  key={`away-${field}`}
-                  label={`球队B${label}`}
-                  field={field}
-                  value={match.awayStats[field] ?? 50}
-                  onChange={(nextField, value) => updateStats('awayStats', nextField, value)}
-                />
-              ))}
-            </section>
-          </div>
-
-        </div>
-      ) : null}
       <OddsDetailModal match={match} analysis={analysis} open={oddsOpen} onClose={() => setOddsOpen(false)} />
     </article>
   );

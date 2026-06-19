@@ -1,4 +1,5 @@
 import { Info, X } from 'lucide-react';
+import type { MouseEvent } from 'react';
 import {
   CONFIDENCE_INSIGHT_BANDS,
   PACE_INSIGHT_BANDS,
@@ -38,6 +39,12 @@ function InsightSection({ title, items }: InsightSectionProps) {
 }
 
 export function InsightGuideModal({ open, onOpen, onClose }: InsightGuideModalProps) {
+  const handleBackdropClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
     <>
       <button
@@ -51,7 +58,7 @@ export function InsightGuideModal({ open, onOpen, onClose }: InsightGuideModalPr
       </button>
 
       {open ? (
-        <div className="modal-backdrop" role="presentation">
+        <div className="modal-backdrop" role="presentation" onClick={handleBackdropClick}>
           <section className="insight-modal" role="dialog" aria-modal="true" aria-label="指标说明">
             <div className="insight-modal-heading">
               <div>

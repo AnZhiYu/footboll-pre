@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { MatchAnalysis } from '../types';
 import {
   buildScoreBoardItems,
+  calculateModelTotalGoalsProbabilities,
   calculateSlipSummary,
   filterAndSortScoreBoardItems,
+  getSlipLegMetrics,
   toggleSelectedScore,
 } from './scoreBoard';
 
@@ -33,7 +35,7 @@ describe('score board', () => {
     const items = buildScoreBoardItems([analysis()]);
 
     expect(items.map((item) => item.score.label)).toContain('1-0');
-    expect(items.find((item) => item.score.label === '1-0')?.strategyLabels).toContain('主线');
+    expect(items.find((item) => item.score.label === '1-0')?.strategyLabels).toContain('主推');
     expect(items.find((item) => item.score.label === '3-1')?.strategyLabels).toContain('大比分');
     expect(items.find((item) => item.score.label === '4-1')?.strategyLabels).toContain('赔率价值');
   });
@@ -65,24 +67,43 @@ describe('score board', () => {
     expect(toggleSelectedScore({ 'm1:1-0': { mode: 'score' } }, items[0])).toEqual({});
   });
 
-  it('calculates total odds and probability from selected score or winner modes only', () => {
+  it('calculates total odds and probability from selected score, winner, and total goals modes', () => {
     const items = buildScoreBoardItems([analysis()]);
     const summary = calculateSlipSummary(
       [
         { item: items.find((item) => item.score.label === '1-0')!, mode: 'score' },
         { item: items.find((item) => item.score.label === '4-1')!, mode: 'winner' },
-        { item: items.find((item) => item.score.label === '1-1')!, mode: undefined },
+        { item: items.find((item) => item.score.label === '1-1')!, mode: 'totalGoals' },
+        { item: items.find((item) => item.score.label === '2-1')!, mode: undefined },
       ],
       [
         {
           matchId: 'm1',
           winnerOdds: { teamAWin: 2.2, draw: 3.2, teamBWin: 3.4 },
+          totalGoalsOdds: [{ goals: 2, odds: 3.4 }],
           modelWinnerProbabilities: { teamAWin: 0.55, draw: 0.25, teamBWin: 0.2 },
+          modelTotalGoalsProbabilities: calculateModelTotalGoalsProbabilities(analysis().matrix),
         },
       ],
     );
 
-    expect(summary.totalOdds).toBeCloseTo(6.6 * 2.2, 6);
-    expect(summary.totalProbability).toBeCloseTo(0.18 * 0.55, 6);
+    expect(summary.totalOdds).toBeCloseTo(6.6 * 2.2 * 3.4, 6);
+    expect(summary.totalProbability).toBeCloseTo(0.18 * 0.55 * 0.15, 6);
+  });
+
+  it('estimates total goals odds from model probability when total goals odds are missing', () => {
+    const items = buildScoreBoardItems([analysis()]);
+    const item = items.find((candidate) => candidate.score.label === '2-1')!;
+    const metrics = getSlipLegMetrics(item, 'totalGoals', [
+      {
+        matchId: 'm1',
+        winnerOdds: { teamAWin: 2.2, draw: 3.2, teamBWin: 3.4 },
+        modelWinnerProbabilities: { teamAWin: 0.55, draw: 0.25, teamBWin: 0.2 },
+        modelTotalGoalsProbabilities: calculateModelTotalGoalsProbabilities(analysis().matrix),
+      },
+    ]);
+
+    expect(metrics).toMatchObject({ probability: 0.08, estimated: true });
+    expect(metrics.odds).toBeCloseTo(12.5, 6);
   });
 });

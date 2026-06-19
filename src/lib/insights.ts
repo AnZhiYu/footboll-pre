@@ -176,7 +176,7 @@ export const CONFIDENCE_INSIGHT_BANDS: InsightBand[] = [
     label: '方向明朗',
     short: '优势倾斜',
     tooltip: '数据开始靠拢，变量减少，优势或低比分倾向变清晰。',
-    bettingHint: '可围绕 Top1/Top2 做主线。',
+    bettingHint: '可围绕 Top1/Top2 做主推。',
     tone: 'normal',
   },
   {

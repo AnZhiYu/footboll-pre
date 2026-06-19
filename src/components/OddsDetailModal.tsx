@@ -1,6 +1,13 @@
 import { X } from 'lucide-react';
+import type { MouseEvent } from 'react';
 import { useMemo, useState } from 'react';
 import { formatProbability } from '../lib/combo';
+import {
+  CORRECT_SCORE_TAGS,
+  type CorrectScoreTagKey,
+  getCorrectScoreReason,
+  getCorrectScoreTagMap,
+} from '../lib/correctScoreTags';
 import type { Match, MatchAnalysis, OutcomeOdds, ProbabilityTriplet, ScorePick } from '../types';
 
 type OddsDetailModalProps = {
@@ -12,7 +19,15 @@ type OddsDetailModalProps = {
 
 const formatOdds = (value: number | undefined) => (value ? value.toFixed(2) : '-');
 const formatValue = (value: number | undefined) => (value ? value.toFixed(2) : '-');
-type ScoreOddsSortKey = 'probability' | 'odds' | 'value';
+const formatGoals = (value: number | '7+') => (value === '7+' ? '7+球' : `${value}球`);
+type ScoreOddsSortKey = 'probability' | 'odds' | 'value' | 'tags';
+const tagOptions: CorrectScoreTagKey[] = ['reasonableNonHot', 'middleOdds', 'mainline', 'highScore', 'value'];
+const statRows = [
+  ['attack', '进攻'],
+  ['defense', '防守'],
+  ['stability', '稳定'],
+  ['pace', '节奏'],
+] as const;
 
 const outcomeRows = (
   match: Match,
@@ -47,7 +62,9 @@ const scoreByLabel = (matrix: ScorePick[]) => new Map(matrix.map((pick) => [pick
 
 export function OddsDetailModal({ match, analysis, open, onClose }: OddsDetailModalProps) {
   const [scoreSortKey, setScoreSortKey] = useState<ScoreOddsSortKey>('probability');
+  const [activeTag, setActiveTag] = useState<CorrectScoreTagKey | undefined>();
   const scoreMap = useMemo(() => scoreByLabel(analysis.matrix), [analysis.matrix]);
+  const tagMap = useMemo(() => getCorrectScoreTagMap(analysis), [analysis]);
   const correctScores = useMemo(
     () =>
       [...(match.odds?.correctScores ?? [])].sort((a, b) => {
@@ -61,9 +78,18 @@ export function OddsDetailModal({ match, analysis, open, onClose }: OddsDetailMo
           return (bPick?.valueIndex ?? -1) - (aPick?.valueIndex ?? -1);
         }
 
+        if (scoreSortKey === 'tags') {
+          const tagDiff = (tagMap.get(b.score)?.length ?? 0) - (tagMap.get(a.score)?.length ?? 0);
+          if (tagDiff !== 0) {
+            return tagDiff;
+          }
+
+          return (bPick?.probability ?? 0) - (aPick?.probability ?? 0);
+        }
+
         return (bPick?.probability ?? 0) - (aPick?.probability ?? 0);
       }),
-    [match.odds?.correctScores, scoreMap, scoreSortKey],
+    [match.odds?.correctScores, scoreMap, scoreSortKey, tagMap],
   );
 
   if (!open) {
@@ -71,9 +97,14 @@ export function OddsDetailModal({ match, analysis, open, onClose }: OddsDetailMo
   }
 
   const title = `${match.homeName} vs ${match.awayName}`;
+  const handleBackdropClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
 
   return (
-    <div className="modal-backdrop" role="presentation">
+    <div className="modal-backdrop" role="presentation" onClick={handleBackdropClick}>
       <section className="insight-modal odds-detail-modal" role="dialog" aria-modal="true" aria-label={`${title} 赔率详情`}>
         <div className="insight-modal-heading">
           <div>
@@ -87,6 +118,28 @@ export function OddsDetailModal({ match, analysis, open, onClose }: OddsDetailMo
 
         {match.odds ? (
           <>
+            <section className="odds-detail-section">
+              <div className="odds-detail-title">
+                <h3>球队能力</h3>
+                <strong>只读</strong>
+              </div>
+              <div className="odds-team-stats">
+                {[
+                  { name: match.homeName, stats: match.homeStats },
+                  { name: match.awayName, stats: match.awayStats },
+                ].map((team) => (
+                  <div className="odds-team-stat-card" key={team.name}>
+                    <strong>{team.name}</strong>
+                    <div>
+                      {statRows.map(([field, label]) => (
+                        <span key={field}>{label} {team.stats[field] ?? 50}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             <section className="odds-detail-section">
               <div className="odds-detail-title">
                 <h3>胜平负价值</h3>
@@ -136,23 +189,77 @@ export function OddsDetailModal({ match, analysis, open, onClose }: OddsDetailMo
                 <button type="button" aria-pressed={scoreSortKey === 'value'} onClick={() => setScoreSortKey('value')}>
                   价值排序
                 </button>
+                <button type="button" aria-pressed={scoreSortKey === 'tags'} onClick={() => setScoreSortKey('tags')}>
+                  标签推荐
+                </button>
+              </div>
+              <div className="correct-score-tag-filter" aria-label="波胆标签高亮">
+                {tagOptions.map((tagKey) => (
+                  <button
+                    className="correct-score-tag-filter-button"
+                    data-tag={tagKey}
+                    type="button"
+                    aria-label={`波胆标签 ${CORRECT_SCORE_TAGS[tagKey].label}`}
+                    aria-pressed={activeTag === tagKey}
+                    key={tagKey}
+                    onClick={() => setActiveTag((current) => (current === tagKey ? undefined : tagKey))}
+                  >
+                    {CORRECT_SCORE_TAGS[tagKey].label}
+                  </button>
+                ))}
               </div>
               {correctScores.length > 0 ? (
                 <div className="score-odds-grid">
                   {correctScores.map((item) => {
                     const pick = scoreMap.get(item.score);
+                    const tags = tagMap.get(item.score) ?? [];
+                    const highlighted = activeTag !== undefined && tags.some((tag) => tag.key === activeTag);
+                    const reason = pick ? getCorrectScoreReason(pick, tags) : '暂无模型解释';
                     return (
-                      <div className="score-odds-row" key={`${item.score}-${item.odds}`}>
+                      <div
+                        className={`score-odds-row${highlighted ? ' tag-highlighted' : ''}`}
+                        key={`${item.score}-${item.odds}`}
+                      >
                         <strong>{item.score}</strong>
                         <span>赔 {formatOdds(item.odds)}</span>
                         <span>模型 {pick ? formatProbability(pick.probability) : '-'}</span>
                         <span>价值 {formatValue(pick?.valueIndex)}</span>
+                        <span className="correct-score-reason">{reason}</span>
+                        {tags.length > 0 ? (
+                          <span className="correct-score-row-tags">
+                            {tags.map((tag) => (
+                              <em className="correct-score-tag" data-tag={tag.key} key={tag.key}>
+                                {tag.label}
+                              </em>
+                            ))}
+                          </span>
+                        ) : null}
                       </div>
                     );
                   })}
                 </div>
               ) : (
                 <p className="odds-empty">当前比赛未导入波胆赔率。</p>
+              )}
+            </section>
+
+            <section className="odds-detail-section">
+              <div className="odds-detail-title">
+                <h3>总进球数赔率</h3>
+                <strong>{match.odds.totalGoals?.length ?? 0} 项</strong>
+              </div>
+              {match.odds.totalGoals && match.odds.totalGoals.length > 0 ? (
+                <div className="total-goals-odds-grid">
+                  {match.odds.totalGoals.map((item) => (
+                    <div className="score-odds-row" key={`${item.goals}-${item.odds}`}>
+                      <strong>{formatGoals(item.goals)}</strong>
+                      <span>赔 {formatOdds(item.odds)}</span>
+                      <span>{item.status === 'closed' ? '已关' : '开放'}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="odds-empty">当前比赛未导入总进球数赔率。</p>
               )}
             </section>
           </>

@@ -82,6 +82,10 @@ describe('state storage', () => {
           odds: {
             winner: { teamAWin: 2.2, draw: 3.2, teamBWin: 3.4 },
             correctScores: [{ score: '1-0', odds: 6.6, status: 'open' as const }],
+            totalGoals: [
+              { goals: 2, odds: 3.4, status: 'open' as const },
+              { goals: '7+' as const, odds: 60 },
+            ],
           },
         },
       ],
