@@ -4,6 +4,15 @@ import type { OddsImportItem } from './oddsImport';
 export const SPORTTERY_CALCULATOR_URL =
   'https://webapi.sporttery.cn/gateway/uniform/football/getMatchCalculatorV1.qry?channel=c&poolCode=crs%2Chad%2Cttg';
 
+export const SPORTTERY_REQUEST_HEADERS = {
+  Accept: 'application/json, text/plain, */*',
+  'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+  Origin: 'https://m.sporttery.cn',
+  Referer: 'https://m.sporttery.cn/',
+  'User-Agent':
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
+} as const;
+
 const SCORE_KEYS: Array<[string, string]> = [
   ['s00s00', '0-0'],
   ['s00s01', '0-1'],
@@ -104,9 +113,7 @@ export const parseSportteryCalculatorResponse = (rawData: unknown): OddsImportIt
 
 export const fetchSportteryOdds = async (fetcher: typeof fetch = fetch) => {
   const response = await fetcher(SPORTTERY_CALCULATOR_URL, {
-    headers: {
-      Accept: 'application/json',
-    },
+    headers: SPORTTERY_REQUEST_HEADERS,
   });
 
   if (!response.ok) {

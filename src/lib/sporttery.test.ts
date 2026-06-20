@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SPORTTERY_CALCULATOR_URL, parseSportteryCalculatorResponse } from './sporttery';
+import { SPORTTERY_CALCULATOR_URL, SPORTTERY_REQUEST_HEADERS, parseSportteryCalculatorResponse } from './sporttery';
 
 describe('sporttery calculator adapter', () => {
   it('maps winner, correct score, and total goals odds into project odds imports', () => {
@@ -67,5 +67,7 @@ describe('sporttery calculator adapter', () => {
 
   it('exposes the official calculator url with winner, correct score, and total goals pools', () => {
     expect(SPORTTERY_CALCULATOR_URL).toContain('poolCode=crs%2Chad%2Cttg');
+    expect(SPORTTERY_REQUEST_HEADERS.Referer).toBe('https://m.sporttery.cn/');
+    expect(SPORTTERY_REQUEST_HEADERS['User-Agent']).toContain('iPhone');
   });
 });

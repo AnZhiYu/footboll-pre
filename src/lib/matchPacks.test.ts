@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { buildStateFromMatchPack, MATCH_PACKS } from './matchPacks';
 
 describe('match packs', () => {
-  it('keeps built-in 6.18 and 6.19 packs with ability and odds data', () => {
-    expect(MATCH_PACKS.map((pack) => pack.id)).toEqual(['2026-06-18', '2026-06-19']);
+  it('keeps built-in 6.18, 6.19, and 6.20 packs with ability and odds data', () => {
+    expect(MATCH_PACKS.map((pack) => pack.id)).toEqual(['2026-06-18', '2026-06-19', '2026-06-20']);
 
     const june18 = MATCH_PACKS[0];
     expect(june18.label).toBe('6.18 比赛');
@@ -28,6 +28,19 @@ describe('match packs', () => {
     expect(june19.odds).toHaveLength(4);
     expect(june19.odds[0].odds.winner?.teamAWin).toBeGreaterThan(1);
     expect(june19.odds[0].odds.correctScores?.length).toBeGreaterThan(0);
+
+    const june20 = MATCH_PACKS[2];
+    expect(june20.label).toBe('6.20 比赛');
+    expect(june20.matches.map((pair) => `${pair[0].team} vs ${pair[1].team}`)).toEqual([
+      '荷兰 vs 瑞典',
+      '德国 vs 科特迪瓦',
+      '厄瓜多尔 vs 库拉索',
+      '突尼斯 vs 日本',
+    ]);
+    expect(june20.odds).toHaveLength(4);
+    expect(june20.odds[0].odds.winner?.teamAWin).toBeGreaterThan(1);
+    expect(june20.odds[0].odds.correctScores?.length).toBeGreaterThan(0);
+    expect(june20.odds[0].odds.totalGoals?.length).toBeGreaterThan(0);
   });
 
   it('builds a fresh app state from a match pack and matches odds into the games', () => {

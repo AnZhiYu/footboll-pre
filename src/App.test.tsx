@@ -469,12 +469,20 @@ describe('App', () => {
     expect(screen.getByLabelText('美国 vs 澳大利亚 胜平负价值')).toBeInTheDocument();
     expect(packSelect).toHaveValue('2026-06-19');
 
+    await user.selectOptions(packSelect, '2026-06-20');
+    expect(confirmSpy).toHaveBeenLastCalledWith(expect.stringContaining('6.20 比赛'));
+    expect(screen.getAllByText('荷兰 vs 瑞典').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('德国 vs 科特迪瓦').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('荷兰 vs 瑞典 胜平负价值')).toBeInTheDocument();
+    expect(packSelect).toHaveValue('2026-06-20');
+
     await user.click(screen.getByRole('button', { name: '清空重置' }));
     expect(screen.getByText('比赛池为空')).toBeInTheDocument();
     expect(screen.getByLabelText('选择比赛数据包')).toHaveValue('custom');
     expect(screen.getByRole('option', { name: '自定义当前表格' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: '6.18 比赛 · 4 场' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: '6.19 比赛 · 4 场' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: '6.20 比赛 · 4 场' })).toBeInTheDocument();
   });
 
   it('keeps the current table when match pack switching is cancelled', async () => {
