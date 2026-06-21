@@ -476,6 +476,15 @@ describe('App', () => {
     expect(screen.getByLabelText('荷兰 vs 瑞典 胜平负价值')).toBeInTheDocument();
     expect(packSelect).toHaveValue('2026-06-20');
 
+    await user.selectOptions(packSelect, '2026-06-21');
+    expect(confirmSpy).toHaveBeenLastCalledWith(expect.stringContaining('6.21 比赛'));
+    expect(screen.getAllByText('西班牙 vs 沙特').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('比利时 vs 伊朗').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('乌拉圭 vs 佛得角').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('新西兰 vs 埃及').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('比利时 vs 伊朗 胜平负价值')).toBeInTheDocument();
+    expect(packSelect).toHaveValue('2026-06-21');
+
     await user.click(screen.getByRole('button', { name: '清空重置' }));
     expect(screen.getByText('比赛池为空')).toBeInTheDocument();
     expect(screen.getByLabelText('选择比赛数据包')).toHaveValue('custom');
@@ -483,6 +492,7 @@ describe('App', () => {
     expect(screen.getByRole('option', { name: '6.18 比赛 · 4 场' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: '6.19 比赛 · 4 场' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: '6.20 比赛 · 4 场' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: '6.21 比赛 · 4 场' })).toBeInTheDocument();
   });
 
   it('keeps the current table when match pack switching is cancelled', async () => {
