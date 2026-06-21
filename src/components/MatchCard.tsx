@@ -3,6 +3,11 @@ import { useState } from 'react';
 import type { Match, MatchAnalysis, ProbabilityTriplet, ScorePick } from '../types';
 import { getBigScoreSignal } from '../lib/bigScore';
 import { formatProbability, getScoreLayers } from '../lib/combo';
+import {
+  formatTotalGoalsLabel,
+  getBttsProbabilities,
+  getLeadingTotalGoalsProbabilities,
+} from '../lib/directionProbabilities';
 import { getConfidenceInsight, getPaceInsight, getXgInsight } from '../lib/insights';
 import { getMidOddsCandidateInsight } from '../lib/odds';
 import { OddsDetailModal } from './OddsDetailModal';
@@ -48,6 +53,11 @@ export function MatchCard({
   const confidence = getConfidenceInsight(analysis.mostLikely.probability);
   const scoreLayers = getScoreLayers(analysis);
   const bigScoreSignal = getBigScoreSignal(analysis);
+  const totalGoalsProbabilities = getLeadingTotalGoalsProbabilities(analysis, 3);
+  const bttsProbabilities = getBttsProbabilities(analysis);
+  const bttsLead = bttsProbabilities.yes >= bttsProbabilities.no
+    ? ['是', bttsProbabilities.yes]
+    : ['否', bttsProbabilities.no];
   const midOddsCandidate = getMidOddsCandidateInsight(match, analysis);
   const [oddsOpen, setOddsOpen] = useState(false);
   const winnerSummary = analysis.oddsSummary?.winner;
@@ -154,6 +164,28 @@ export function MatchCard({
                 ? '观察为主'
                 : bigScoreSignal.candidates.slice(0, 4).map((pick) => pick.label).join(' / ')}
             </strong>
+          </div>
+          <div className="direction-probability-strip" aria-label={`${title} 方向概率`}>
+            <section title="按当前比分矩阵汇总的总进球数模型概率">
+              <strong>进球数</strong>
+              <div>
+                {totalGoalsProbabilities.map((item) => (
+                  <span key={String(item.goals)}>
+                    {formatTotalGoalsLabel(item.goals)} {formatProbability(item.probability)}
+                  </span>
+                ))}
+              </div>
+            </section>
+            <section title={`双方进球模型概率：是 ${formatProbability(bttsProbabilities.yes)} / 否 ${formatProbability(bttsProbabilities.no)}`}>
+              <strong>BTTS</strong>
+              <div>
+                <span data-lead="true">
+                  {bttsLead[0]} {formatProbability(Number(bttsLead[1]))}
+                </span>
+                <span>是 {formatProbability(bttsProbabilities.yes)}</span>
+                <span>否 {formatProbability(bttsProbabilities.no)}</span>
+              </div>
+            </section>
           </div>
           <div className="metric-strip" aria-label={`${title} 指标解读`}>
             <span className="metric-chip" title={`${homeXg.tooltip} ${homeXg.bettingHint}`}>

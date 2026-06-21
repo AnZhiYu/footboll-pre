@@ -660,6 +660,50 @@ input:focus {
   background: #f7c8b8;
 }
 
+.direction-probability-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  color: #536258;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.direction-probability-strip section {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid #dce7ee;
+  border-radius: 6px;
+  background: #f6fafc;
+  padding: 7px 8px;
+}
+
+.direction-probability-strip strong {
+  color: #24495c;
+  font-size: 12px;
+}
+
+.direction-probability-strip div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.direction-probability-strip span {
+  border-radius: 5px;
+  background: #ffffff;
+  padding: 4px 6px;
+  color: #40535d;
+  white-space: nowrap;
+}
+
+.direction-probability-strip span[data-lead="true"] {
+  color: #1f5d3f;
+  background: #dff2e5;
+}
+
 .metric-strip {
   display: flex;
   flex-wrap: wrap;
