@@ -1,0 +1,1275 @@
+{
+  "id": "2026-06-24",
+  "label": "6.24 比赛",
+  "matches": [
+    [
+      {
+        "team": "瑞士",
+        "attack": 68,
+        "defense": 82,
+        "stability": 80,
+        "pace": 44
+      },
+      {
+        "team": "加拿大",
+        "attack": 66,
+        "defense": 60,
+        "stability": 62,
+        "pace": 64
+      }
+    ],
+    [
+      {
+        "team": "波黑",
+        "attack": 65,
+        "defense": 59,
+        "stability": 57,
+        "pace": 56
+      },
+      {
+        "team": "卡塔尔",
+        "attack": 54,
+        "defense": 51,
+        "stability": 49,
+        "pace": 47
+      }
+    ],
+    [
+      {
+        "team": "苏格兰",
+        "attack": 64,
+        "defense": 67,
+        "stability": 63,
+        "pace": 51
+      },
+      {
+        "team": "巴西",
+        "attack": 88,
+        "defense": 83,
+        "stability": 86,
+        "pace": 58
+      }
+    ],
+    [
+      {
+        "team": "摩洛哥",
+        "attack": 70,
+        "defense": 80,
+        "stability": 78,
+        "pace": 48
+      },
+      {
+        "team": "海地",
+        "attack": 42,
+        "defense": 40,
+        "stability": 38,
+        "pace": 55
+      }
+    ],
+    [
+      {
+        "team": "南非",
+        "attack": 56,
+        "defense": 54,
+        "stability": 52,
+        "pace": 58
+      },
+      {
+        "team": "韩国",
+        "attack": 74,
+        "defense": 67,
+        "stability": 66,
+        "pace": 67
+      }
+    ],
+    [
+      {
+        "team": "捷克",
+        "attack": 63,
+        "defense": 66,
+        "stability": 61,
+        "pace": 53
+      },
+      {
+        "team": "墨西哥",
+        "attack": 72,
+        "defense": 69,
+        "stability": 68,
+        "pace": 59
+      }
+    ]
+  ],
+  "odds": [
+    {
+      "teamA": "瑞士",
+      "teamB": "加拿大",
+      "odds": {
+        "source": "scraped",
+        "winner": {
+          "teamAWin": 2.3,
+          "draw": 2.62,
+          "teamBWin": 3.2
+        },
+        "correctScores": [
+          {
+            "score": "0-0",
+            "odds": 7.25,
+            "status": "open"
+          },
+          {
+            "score": "0-1",
+            "odds": 9.25,
+            "status": "open"
+          },
+          {
+            "score": "0-2",
+            "odds": 16,
+            "status": "open"
+          },
+          {
+            "score": "0-3",
+            "odds": 50,
+            "status": "open"
+          },
+          {
+            "score": "0-4",
+            "odds": 125,
+            "status": "open"
+          },
+          {
+            "score": "0-5",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "1-0",
+            "odds": 7.25,
+            "status": "open"
+          },
+          {
+            "score": "1-1",
+            "odds": 4.5,
+            "status": "open"
+          },
+          {
+            "score": "1-2",
+            "odds": 10,
+            "status": "open"
+          },
+          {
+            "score": "1-3",
+            "odds": 30,
+            "status": "open"
+          },
+          {
+            "score": "1-4",
+            "odds": 100,
+            "status": "open"
+          },
+          {
+            "score": "1-5",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "2-0",
+            "odds": 10.5,
+            "status": "open"
+          },
+          {
+            "score": "2-1",
+            "odds": 8,
+            "status": "open"
+          },
+          {
+            "score": "2-2",
+            "odds": 11.5,
+            "status": "open"
+          },
+          {
+            "score": "2-3",
+            "odds": 40,
+            "status": "open"
+          },
+          {
+            "score": "2-4",
+            "odds": 150,
+            "status": "open"
+          },
+          {
+            "score": "2-5",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "3-0",
+            "odds": 22,
+            "status": "open"
+          },
+          {
+            "score": "3-1",
+            "odds": 18,
+            "status": "open"
+          },
+          {
+            "score": "3-2",
+            "odds": 30,
+            "status": "open"
+          },
+          {
+            "score": "3-3",
+            "odds": 70,
+            "status": "open"
+          },
+          {
+            "score": "4-0",
+            "odds": 60,
+            "status": "open"
+          },
+          {
+            "score": "4-1",
+            "odds": 60,
+            "status": "open"
+          },
+          {
+            "score": "4-2",
+            "odds": 100,
+            "status": "open"
+          },
+          {
+            "score": "5-0",
+            "odds": 200,
+            "status": "open"
+          },
+          {
+            "score": "5-1",
+            "odds": 200,
+            "status": "open"
+          },
+          {
+            "score": "5-2",
+            "odds": 300,
+            "status": "open"
+          }
+        ],
+        "totalGoals": [
+          {
+            "goals": 0,
+            "odds": 7.25,
+            "status": "open"
+          },
+          {
+            "goals": 1,
+            "odds": 4.6,
+            "status": "open"
+          },
+          {
+            "goals": 2,
+            "odds": 2.9,
+            "status": "open"
+          },
+          {
+            "goals": 3,
+            "odds": 4,
+            "status": "open"
+          },
+          {
+            "goals": 4,
+            "odds": 6,
+            "status": "open"
+          },
+          {
+            "goals": 5,
+            "odds": 14,
+            "status": "open"
+          },
+          {
+            "goals": 6,
+            "odds": 24,
+            "status": "open"
+          },
+          {
+            "goals": "7+",
+            "odds": 40,
+            "status": "open"
+          }
+        ]
+      }
+    },
+    {
+      "teamA": "波黑",
+      "teamB": "卡塔尔",
+      "odds": {
+        "source": "scraped",
+        "winner": {
+          "teamAWin": 1.38,
+          "draw": 4.45,
+          "teamBWin": 5.55
+        },
+        "correctScores": [
+          {
+            "score": "0-0",
+            "odds": 16,
+            "status": "open"
+          },
+          {
+            "score": "0-1",
+            "odds": 16,
+            "status": "open"
+          },
+          {
+            "score": "0-2",
+            "odds": 32,
+            "status": "open"
+          },
+          {
+            "score": "0-3",
+            "odds": 100,
+            "status": "open"
+          },
+          {
+            "score": "0-4",
+            "odds": 300,
+            "status": "open"
+          },
+          {
+            "score": "0-5",
+            "odds": 600,
+            "status": "open"
+          },
+          {
+            "score": "1-0",
+            "odds": 7.25,
+            "status": "open"
+          },
+          {
+            "score": "1-1",
+            "odds": 8,
+            "status": "open"
+          },
+          {
+            "score": "1-2",
+            "odds": 15,
+            "status": "open"
+          },
+          {
+            "score": "1-3",
+            "odds": 45,
+            "status": "open"
+          },
+          {
+            "score": "1-4",
+            "odds": 200,
+            "status": "open"
+          },
+          {
+            "score": "1-5",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "2-0",
+            "odds": 7.1,
+            "status": "open"
+          },
+          {
+            "score": "2-1",
+            "odds": 6.25,
+            "status": "open"
+          },
+          {
+            "score": "2-2",
+            "odds": 15,
+            "status": "open"
+          },
+          {
+            "score": "2-3",
+            "odds": 45,
+            "status": "open"
+          },
+          {
+            "score": "2-4",
+            "odds": 200,
+            "status": "open"
+          },
+          {
+            "score": "2-5",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "3-0",
+            "odds": 10,
+            "status": "open"
+          },
+          {
+            "score": "3-1",
+            "odds": 9.5,
+            "status": "open"
+          },
+          {
+            "score": "3-2",
+            "odds": 21,
+            "status": "open"
+          },
+          {
+            "score": "3-3",
+            "odds": 70,
+            "status": "open"
+          },
+          {
+            "score": "4-0",
+            "odds": 19,
+            "status": "open"
+          },
+          {
+            "score": "4-1",
+            "odds": 20,
+            "status": "open"
+          },
+          {
+            "score": "4-2",
+            "odds": 50,
+            "status": "open"
+          },
+          {
+            "score": "5-0",
+            "odds": 50,
+            "status": "open"
+          },
+          {
+            "score": "5-1",
+            "odds": 50,
+            "status": "open"
+          },
+          {
+            "score": "5-2",
+            "odds": 100,
+            "status": "open"
+          }
+        ],
+        "totalGoals": [
+          {
+            "goals": 0,
+            "odds": 16,
+            "status": "open"
+          },
+          {
+            "goals": 1,
+            "odds": 5.7,
+            "status": "open"
+          },
+          {
+            "goals": 2,
+            "odds": 3.9,
+            "status": "open"
+          },
+          {
+            "goals": 3,
+            "odds": 3.3,
+            "status": "open"
+          },
+          {
+            "goals": 4,
+            "odds": 4.75,
+            "status": "open"
+          },
+          {
+            "goals": 5,
+            "odds": 8,
+            "status": "open"
+          },
+          {
+            "goals": 6,
+            "odds": 14,
+            "status": "open"
+          },
+          {
+            "goals": "7+",
+            "odds": 20,
+            "status": "open"
+          }
+        ]
+      }
+    },
+    {
+      "teamA": "苏格兰",
+      "teamB": "巴西",
+      "odds": {
+        "source": "scraped",
+        "winner": {
+          "teamAWin": 7.85,
+          "draw": 4.8,
+          "teamBWin": 1.26
+        },
+        "correctScores": [
+          {
+            "score": "0-0",
+            "odds": 14,
+            "status": "open"
+          },
+          {
+            "score": "0-1",
+            "odds": 6.5,
+            "status": "open"
+          },
+          {
+            "score": "0-2",
+            "odds": 6,
+            "status": "open"
+          },
+          {
+            "score": "0-3",
+            "odds": 7.5,
+            "status": "open"
+          },
+          {
+            "score": "0-4",
+            "odds": 13,
+            "status": "open"
+          },
+          {
+            "score": "0-5",
+            "odds": 30,
+            "status": "open"
+          },
+          {
+            "score": "1-0",
+            "odds": 20,
+            "status": "open"
+          },
+          {
+            "score": "1-1",
+            "odds": 8.25,
+            "status": "open"
+          },
+          {
+            "score": "1-2",
+            "odds": 7,
+            "status": "open"
+          },
+          {
+            "score": "1-3",
+            "odds": 9.5,
+            "status": "open"
+          },
+          {
+            "score": "1-4",
+            "odds": 19,
+            "status": "open"
+          },
+          {
+            "score": "1-5",
+            "odds": 50,
+            "status": "open"
+          },
+          {
+            "score": "2-0",
+            "odds": 50,
+            "status": "open"
+          },
+          {
+            "score": "2-1",
+            "odds": 21,
+            "status": "open"
+          },
+          {
+            "score": "2-2",
+            "odds": 20,
+            "status": "open"
+          },
+          {
+            "score": "2-3",
+            "odds": 27,
+            "status": "open"
+          },
+          {
+            "score": "2-4",
+            "odds": 50,
+            "status": "open"
+          },
+          {
+            "score": "2-5",
+            "odds": 100,
+            "status": "open"
+          },
+          {
+            "score": "3-0",
+            "odds": 150,
+            "status": "open"
+          },
+          {
+            "score": "3-1",
+            "odds": 90,
+            "status": "open"
+          },
+          {
+            "score": "3-2",
+            "odds": 75,
+            "status": "open"
+          },
+          {
+            "score": "3-3",
+            "odds": 90,
+            "status": "open"
+          },
+          {
+            "score": "4-0",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "4-1",
+            "odds": 400,
+            "status": "open"
+          },
+          {
+            "score": "4-2",
+            "odds": 400,
+            "status": "open"
+          },
+          {
+            "score": "5-0",
+            "odds": 800,
+            "status": "open"
+          },
+          {
+            "score": "5-1",
+            "odds": 800,
+            "status": "open"
+          },
+          {
+            "score": "5-2",
+            "odds": 800,
+            "status": "open"
+          }
+        ],
+        "totalGoals": [
+          {
+            "goals": 0,
+            "odds": 14,
+            "status": "open"
+          },
+          {
+            "goals": 1,
+            "odds": 5.3,
+            "status": "open"
+          },
+          {
+            "goals": 2,
+            "odds": 3.7,
+            "status": "open"
+          },
+          {
+            "goals": 3,
+            "odds": 3.4,
+            "status": "open"
+          },
+          {
+            "goals": 4,
+            "odds": 5,
+            "status": "open"
+          },
+          {
+            "goals": 5,
+            "odds": 8.5,
+            "status": "open"
+          },
+          {
+            "goals": 6,
+            "odds": 15,
+            "status": "open"
+          },
+          {
+            "goals": "7+",
+            "odds": 22,
+            "status": "open"
+          }
+        ]
+      }
+    },
+    {
+      "teamA": "摩洛哥",
+      "teamB": "海地",
+      "odds": {
+        "source": "scraped",
+        "correctScores": [
+          {
+            "score": "0-0",
+            "odds": 20,
+            "status": "open"
+          },
+          {
+            "score": "0-1",
+            "odds": 30,
+            "status": "open"
+          },
+          {
+            "score": "0-2",
+            "odds": 100,
+            "status": "open"
+          },
+          {
+            "score": "0-3",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "0-4",
+            "odds": 800,
+            "status": "open"
+          },
+          {
+            "score": "0-5",
+            "odds": 800,
+            "status": "open"
+          },
+          {
+            "score": "1-0",
+            "odds": 6.75,
+            "status": "open"
+          },
+          {
+            "score": "1-1",
+            "odds": 12,
+            "status": "open"
+          },
+          {
+            "score": "1-2",
+            "odds": 40,
+            "status": "open"
+          },
+          {
+            "score": "1-3",
+            "odds": 200,
+            "status": "open"
+          },
+          {
+            "score": "1-4",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "1-5",
+            "odds": 800,
+            "status": "open"
+          },
+          {
+            "score": "2-0",
+            "odds": 5.4,
+            "status": "open"
+          },
+          {
+            "score": "2-1",
+            "odds": 8,
+            "status": "open"
+          },
+          {
+            "score": "2-2",
+            "odds": 29,
+            "status": "open"
+          },
+          {
+            "score": "2-3",
+            "odds": 150,
+            "status": "open"
+          },
+          {
+            "score": "2-4",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "2-5",
+            "odds": 800,
+            "status": "open"
+          },
+          {
+            "score": "3-0",
+            "odds": 6,
+            "status": "open"
+          },
+          {
+            "score": "3-1",
+            "odds": 10.5,
+            "status": "open"
+          },
+          {
+            "score": "3-2",
+            "odds": 30,
+            "status": "open"
+          },
+          {
+            "score": "3-3",
+            "odds": 150,
+            "status": "open"
+          },
+          {
+            "score": "4-0",
+            "odds": 8.5,
+            "status": "open"
+          },
+          {
+            "score": "4-1",
+            "odds": 16,
+            "status": "open"
+          },
+          {
+            "score": "4-2",
+            "odds": 60,
+            "status": "open"
+          },
+          {
+            "score": "5-0",
+            "odds": 15,
+            "status": "open"
+          },
+          {
+            "score": "5-1",
+            "odds": 28,
+            "status": "open"
+          },
+          {
+            "score": "5-2",
+            "odds": 100,
+            "status": "open"
+          }
+        ],
+        "totalGoals": [
+          {
+            "goals": 0,
+            "odds": 20,
+            "status": "open"
+          },
+          {
+            "goals": 1,
+            "odds": 6.35,
+            "status": "open"
+          },
+          {
+            "goals": 2,
+            "odds": 4.15,
+            "status": "open"
+          },
+          {
+            "goals": 3,
+            "odds": 3.55,
+            "status": "open"
+          },
+          {
+            "goals": 4,
+            "odds": 4.4,
+            "status": "open"
+          },
+          {
+            "goals": 5,
+            "odds": 7,
+            "status": "open"
+          },
+          {
+            "goals": 6,
+            "odds": 11.5,
+            "status": "open"
+          },
+          {
+            "goals": "7+",
+            "odds": 15,
+            "status": "open"
+          }
+        ]
+      }
+    },
+    {
+      "teamA": "南非",
+      "teamB": "韩国",
+      "odds": {
+        "source": "scraped",
+        "winner": {
+          "teamAWin": 4.65,
+          "draw": 3.28,
+          "teamBWin": 1.64
+        },
+        "correctScores": [
+          {
+            "score": "0-0",
+            "odds": 8.5,
+            "status": "open"
+          },
+          {
+            "score": "0-1",
+            "odds": 6,
+            "status": "open"
+          },
+          {
+            "score": "0-2",
+            "odds": 7.2,
+            "status": "open"
+          },
+          {
+            "score": "0-3",
+            "odds": 13.5,
+            "status": "open"
+          },
+          {
+            "score": "0-4",
+            "odds": 34,
+            "status": "open"
+          },
+          {
+            "score": "0-5",
+            "odds": 90,
+            "status": "open"
+          },
+          {
+            "score": "1-0",
+            "odds": 10.5,
+            "status": "open"
+          },
+          {
+            "score": "1-1",
+            "odds": 5.75,
+            "status": "open"
+          },
+          {
+            "score": "1-2",
+            "odds": 6.75,
+            "status": "open"
+          },
+          {
+            "score": "1-3",
+            "odds": 12.5,
+            "status": "open"
+          },
+          {
+            "score": "1-4",
+            "odds": 35,
+            "status": "open"
+          },
+          {
+            "score": "1-5",
+            "odds": 100,
+            "status": "open"
+          },
+          {
+            "score": "2-0",
+            "odds": 25,
+            "status": "open"
+          },
+          {
+            "score": "2-1",
+            "odds": 13,
+            "status": "open"
+          },
+          {
+            "score": "2-2",
+            "odds": 15,
+            "status": "open"
+          },
+          {
+            "score": "2-3",
+            "odds": 30,
+            "status": "open"
+          },
+          {
+            "score": "2-4",
+            "odds": 70,
+            "status": "open"
+          },
+          {
+            "score": "2-5",
+            "odds": 200,
+            "status": "open"
+          },
+          {
+            "score": "3-0",
+            "odds": 75,
+            "status": "open"
+          },
+          {
+            "score": "3-1",
+            "odds": 45,
+            "status": "open"
+          },
+          {
+            "score": "3-2",
+            "odds": 60,
+            "status": "open"
+          },
+          {
+            "score": "3-3",
+            "odds": 80,
+            "status": "open"
+          },
+          {
+            "score": "4-0",
+            "odds": 300,
+            "status": "open"
+          },
+          {
+            "score": "4-1",
+            "odds": 200,
+            "status": "open"
+          },
+          {
+            "score": "4-2",
+            "odds": 250,
+            "status": "open"
+          },
+          {
+            "score": "5-0",
+            "odds": 800,
+            "status": "open"
+          },
+          {
+            "score": "5-1",
+            "odds": 600,
+            "status": "open"
+          },
+          {
+            "score": "5-2",
+            "odds": 700,
+            "status": "open"
+          }
+        ],
+        "totalGoals": [
+          {
+            "goals": 0,
+            "odds": 8.5,
+            "status": "open"
+          },
+          {
+            "goals": 1,
+            "odds": 4.1,
+            "status": "open"
+          },
+          {
+            "goals": 2,
+            "odds": 3.1,
+            "status": "open"
+          },
+          {
+            "goals": 3,
+            "odds": 3.8,
+            "status": "open"
+          },
+          {
+            "goals": 4,
+            "odds": 6.25,
+            "status": "open"
+          },
+          {
+            "goals": 5,
+            "odds": 12.5,
+            "status": "open"
+          },
+          {
+            "goals": 6,
+            "odds": 24,
+            "status": "open"
+          },
+          {
+            "goals": "7+",
+            "odds": 40,
+            "status": "open"
+          }
+        ]
+      }
+    },
+    {
+      "teamA": "捷克",
+      "teamB": "墨西哥",
+      "odds": {
+        "source": "scraped",
+        "winner": {
+          "teamAWin": 3.35,
+          "draw": 3.25,
+          "teamBWin": 1.91
+        },
+        "correctScores": [
+          {
+            "score": "0-0",
+            "odds": 9.5,
+            "status": "open"
+          },
+          {
+            "score": "0-1",
+            "odds": 6.5,
+            "status": "open"
+          },
+          {
+            "score": "0-2",
+            "odds": 8.75,
+            "status": "open"
+          },
+          {
+            "score": "0-3",
+            "odds": 18,
+            "status": "open"
+          },
+          {
+            "score": "0-4",
+            "odds": 55,
+            "status": "open"
+          },
+          {
+            "score": "0-5",
+            "odds": 150,
+            "status": "open"
+          },
+          {
+            "score": "1-0",
+            "odds": 8.5,
+            "status": "open"
+          },
+          {
+            "score": "1-1",
+            "odds": 6.2,
+            "status": "open"
+          },
+          {
+            "score": "1-2",
+            "odds": 6.75,
+            "status": "open"
+          },
+          {
+            "score": "1-3",
+            "odds": 15,
+            "status": "open"
+          },
+          {
+            "score": "1-4",
+            "odds": 45,
+            "status": "open"
+          },
+          {
+            "score": "1-5",
+            "odds": 120,
+            "status": "open"
+          },
+          {
+            "score": "2-0",
+            "odds": 16,
+            "status": "open"
+          },
+          {
+            "score": "2-1",
+            "odds": 10,
+            "status": "open"
+          },
+          {
+            "score": "2-2",
+            "odds": 13,
+            "status": "open"
+          },
+          {
+            "score": "2-3",
+            "odds": 30,
+            "status": "open"
+          },
+          {
+            "score": "2-4",
+            "odds": 75,
+            "status": "open"
+          },
+          {
+            "score": "2-5",
+            "odds": 200,
+            "status": "open"
+          },
+          {
+            "score": "3-0",
+            "odds": 50,
+            "status": "open"
+          },
+          {
+            "score": "3-1",
+            "odds": 30,
+            "status": "open"
+          },
+          {
+            "score": "3-2",
+            "odds": 40,
+            "status": "open"
+          },
+          {
+            "score": "3-3",
+            "odds": 70,
+            "status": "open"
+          },
+          {
+            "score": "4-0",
+            "odds": 150,
+            "status": "open"
+          },
+          {
+            "score": "4-1",
+            "odds": 100,
+            "status": "open"
+          },
+          {
+            "score": "4-2",
+            "odds": 150,
+            "status": "open"
+          },
+          {
+            "score": "5-0",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "5-1",
+            "odds": 500,
+            "status": "open"
+          },
+          {
+            "score": "5-2",
+            "odds": 500,
+            "status": "open"
+          }
+        ],
+        "totalGoals": [
+          {
+            "goals": 0,
+            "odds": 9.5,
+            "status": "open"
+          },
+          {
+            "goals": 1,
+            "odds": 4.05,
+            "status": "open"
+          },
+          {
+            "goals": 2,
+            "odds": 3.25,
+            "status": "open"
+          },
+          {
+            "goals": 3,
+            "odds": 3.6,
+            "status": "open"
+          },
+          {
+            "goals": 4,
+            "odds": 6.25,
+            "status": "open"
+          },
+          {
+            "goals": 5,
+            "odds": 12,
+            "status": "open"
+          },
+          {
+            "goals": 6,
+            "odds": 22,
+            "status": "open"
+          },
+          {
+            "goals": "7+",
+            "odds": 36,
+            "status": "open"
+          }
+        ]
+      }
+    }
+  ]
+}

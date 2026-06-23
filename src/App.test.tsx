@@ -485,6 +485,24 @@ describe('App', () => {
     expect(screen.getByLabelText('比利时 vs 伊朗 胜平负价值')).toBeInTheDocument();
     expect(packSelect).toHaveValue('2026-06-21');
 
+    await user.selectOptions(packSelect, '2026-06-23');
+    expect(confirmSpy).toHaveBeenLastCalledWith(expect.stringContaining('6.23 比赛'));
+    expect(screen.getAllByText('葡萄牙 vs 乌兹别克').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('英格兰 vs 加纳').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('巴拿马 vs 克罗地亚').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('哥伦比亚 vs 刚果金').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('巴拿马 vs 克罗地亚 胜平负价值')).toBeInTheDocument();
+    expect(packSelect).toHaveValue('2026-06-23');
+
+    await user.selectOptions(packSelect, '2026-06-24');
+    expect(confirmSpy).toHaveBeenLastCalledWith(expect.stringContaining('6.24 比赛'));
+    expect(screen.getAllByText('瑞士 vs 加拿大').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('波黑 vs 卡塔尔').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('苏格兰 vs 巴西').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('捷克 vs 墨西哥').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('瑞士 vs 加拿大 胜平负价值')).toBeInTheDocument();
+    expect(packSelect).toHaveValue('2026-06-24');
+
     await user.click(screen.getByRole('button', { name: '清空重置' }));
     expect(screen.getByText('比赛池为空')).toBeInTheDocument();
     expect(screen.getByLabelText('选择比赛数据包')).toHaveValue('custom');
@@ -493,6 +511,8 @@ describe('App', () => {
     expect(screen.getByRole('option', { name: '6.19 比赛 · 4 场' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: '6.20 比赛 · 4 场' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: '6.21 比赛 · 4 场' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: '6.23 比赛 · 4 场' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: '6.24 比赛 · 6 场' })).toBeInTheDocument();
   });
 
   it('keeps the current table when match pack switching is cancelled', async () => {

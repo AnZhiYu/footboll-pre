@@ -2,12 +2,21 @@ import june18Pack from '../data/worldcup-match-pack-2026-06-18.json';
 import june19Pack from '../data/worldcup-match-pack-2026-06-19.json';
 import june20Pack from '../data/worldcup-match-pack-2026-06-20.json';
 import june21Pack from '../data/worldcup-match-pack-2026-06-21.json';
+import june23Pack from '../data/worldcup-match-pack-2026-06-23.json';
+import june24Pack from '../data/worldcup-match-pack-2026-06-24.json';
 import type { AppState, MatchPack, TeamProfile } from '../types';
 import { applyOddsImports } from './oddsImport';
 import { createEmptyState } from './storage';
 import { upsertMatchPairs } from './teamImport';
 
-export const MATCH_PACKS = [june18Pack, june19Pack, june20Pack, june21Pack] as MatchPack[];
+export const MATCH_PACKS = [
+  june18Pack,
+  june19Pack,
+  june20Pack,
+  june21Pack,
+  june23Pack,
+  june24Pack,
+] as MatchPack[];
 
 const flattenTeams = (matches: [TeamProfile, TeamProfile][]) => matches.flatMap((pair) => pair);
 
